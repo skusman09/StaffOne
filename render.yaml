@@ -29,7 +29,4 @@ services:
     startCommand: npm start
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          name: backend
-          type: web
-          property: host
+        value: https://backend-cole.onrender.com

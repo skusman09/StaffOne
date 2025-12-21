@@ -9,7 +9,23 @@ export { Cookies }
 let lastLoginTime: number | null = null
 const LOGIN_GRACE_PERIOD = 5000 // 5 seconds grace period after login
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+const getBaseUrl = () => {
+  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+
+  // If no protocol is specified, default to https (or http for localhost)
+  if (!url.startsWith('http')) {
+    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+      url = `http://${url}`
+    } else {
+      url = `https://${url}`
+    }
+  }
+
+  // Ensure no trailing slash
+  return url.endsWith('/') ? url.slice(0, -1) : url
+}
+
+const API_URL = getBaseUrl()
 
 // Create axios instance
 const api = axios.create({
