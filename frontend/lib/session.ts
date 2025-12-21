@@ -27,12 +27,12 @@ export const SessionManager = {
       token,
       expiresAt,
     }
-    
+
     // Store in localStorage for persistence
     if (typeof window !== 'undefined') {
       localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData))
     }
-    
+
     // Also store token in cookie (for API requests)
     Cookies.set(TOKEN_KEY, token, {
       expires: expiresInMinutes / (24 * 60), // Convert minutes to days
@@ -41,32 +41,23 @@ export const SessionManager = {
       path: '/',
     })
   },
-  
-  // Get Basic Auth credentials
-  // SECURITY NOTE: This is deprecated - passwords should not be stored
-  // Basic Auth fallback should use token refresh instead
-  getBasicAuthCredentials: () => {
-    // Return null - passwords are no longer stored for security reasons
-    // If Bearer token fails, use token refresh mechanism instead
-    return null
-  },
 
   // Get current session
   getSession: (): SessionData | null => {
     if (typeof window === 'undefined') return null
-    
+
     try {
       const sessionStr = localStorage.getItem(SESSION_KEY)
       if (!sessionStr) return null
-      
+
       const session: SessionData = JSON.parse(sessionStr)
-      
+
       // Check if session is expired
       if (session.expiresAt && Date.now() > session.expiresAt) {
         SessionManager.clearSession()
         return null
       }
-      
+
       return session
     } catch (error) {
       console.error('Error reading session:', error)
@@ -84,7 +75,7 @@ export const SessionManager = {
   isSessionValid: (): boolean => {
     const session = SessionManager.getSession()
     const token = Cookies.get(TOKEN_KEY)
-    
+
     // Both session and token must exist
     return !!(session && token && session.token === token)
   },

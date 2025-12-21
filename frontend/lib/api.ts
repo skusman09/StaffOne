@@ -23,19 +23,11 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    // Try Bearer token first
     const token = Cookies.get('access_token')
     if (token) {
       // Clean the token (remove any whitespace)
       const cleanToken = token.trim()
       config.headers.Authorization = `Bearer ${cleanToken}`
-    } else {
-      // Fallback: Try Basic Auth from session if no token
-      const credentials = SessionManager.getBasicAuthCredentials()
-      if (credentials) {
-        const basicAuth = btoa(`${credentials.username}:${credentials.password}`)
-        config.headers.Authorization = `Basic ${basicAuth}`
-      }
     }
     return config
   },
