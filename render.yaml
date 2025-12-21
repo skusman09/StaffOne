@@ -9,14 +9,15 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
-        sync: true
+        # You will be prompted for this value in the Render dashboard during deployment
+        value: "postgresql://user:password@host/dbname?sslmode=require"
       - key: SECRET_KEY
         generateValue: true
       - key: CORS_ORIGINS
         fromService:
           name: frontend
           type: web
-          property: url
+          property: host
 
   # Frontend Service (Next.js)
   - type: web
@@ -31,4 +32,4 @@ services:
         fromService:
           name: backend
           type: web
-          property: url
+          property: host
