@@ -142,7 +142,6 @@ export default function RegisterPage() {
                   {errors.email}
                 </p>
               )}
-              </div>
             </div>
 
             {/* Username Field */}
@@ -176,7 +175,6 @@ export default function RegisterPage() {
                   {errors.username}
                 </p>
               )}
-              </div>
             </div>
 
             {/* Full Name Field */}
@@ -255,7 +253,6 @@ export default function RegisterPage() {
                   {errors.password}
                 </p>
               )}
-              </div>
             </div>
 
             {/* Submit Button */}
