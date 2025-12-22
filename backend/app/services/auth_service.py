@@ -79,3 +79,59 @@ def create_tokens_for_user(user: User) -> dict:
         "token_type": "bearer"
     }
 
+
+def update_user_profile(db: Session, user: User, email: str = None, username: str = None, 
+                        full_name: str = None, timezone: str = None) -> User:
+    """Update user profile information."""
+    # Check if new email is already taken
+    if email and email != user.email:
+        existing = db.query(User).filter(User.email == email).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        user.email = email
+    
+    # Check if new username is already taken
+    if username and username != user.username:
+        existing = db.query(User).filter(User.username == username).first()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Username already taken"
+            )
+        user.username = username
+    
+    if full_name is not None:
+        user.full_name = full_name
+    
+    if timezone is not None:
+        user.timezone = timezone
+    
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def change_user_password(db: Session, user: User, current_password: str, new_password: str) -> User:
+    """Change user password after verifying current password."""
+    # Verify current password
+    if not verify_password(current_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect"
+        )
+    
+    # Validate new password
+    if len(new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 6 characters"
+        )
+    
+    # Update password
+    user.hashed_password = get_password_hash(new_password)
+    db.commit()
+    db.refresh(user)
+    return user

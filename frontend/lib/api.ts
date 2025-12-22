@@ -166,6 +166,19 @@ export const authAPI = {
     Cookies.remove('refresh_token')
     lastLoginTime = null
   },
+  updateProfile: async (data: { email?: string; username?: string; full_name?: string; timezone?: string }) => {
+    const response = await api.put('/auth/profile', data)
+    // Update session with new user data
+    const token = Cookies.get('access_token')
+    if (token) {
+      SessionManager.updateUser(response.data)
+    }
+    return response.data
+  },
+  changePassword: async (data: { current_password: string; new_password: string }) => {
+    const response = await api.put('/auth/password', data)
+    return response.data
+  },
 }
 
 // Attendance API

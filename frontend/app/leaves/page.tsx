@@ -29,6 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function LeavesPage() {
     const router = useRouter()
     const queryClient = useQueryClient()
+    const [mounted, setMounted] = useState(false)
     const [showForm, setShowForm] = useState(false)
     const [formData, setFormData] = useState({
         leave_type: 'annual',
@@ -38,27 +39,32 @@ export default function LeavesPage() {
     })
 
     useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    useEffect(() => {
+        if (!mounted) return
         if (!isAuthenticated()) {
             router.push('/login')
         }
-    }, [router])
+    }, [router, mounted])
 
     const { data: user } = useQuery({
         queryKey: ['user'],
         queryFn: authAPI.me,
-        enabled: isAuthenticated(),
+        enabled: mounted && isAuthenticated(),
     })
 
     const { data: leaves, isLoading } = useQuery({
         queryKey: ['myLeaves'],
         queryFn: () => leaveAPI.getMyLeaves(0, 100),
-        enabled: isAuthenticated(),
+        enabled: mounted && isAuthenticated(),
     })
 
     const { data: stats } = useQuery({
         queryKey: ['leaveStats'],
         queryFn: leaveAPI.getStats,
-        enabled: isAuthenticated(),
+        enabled: mounted && isAuthenticated(),
     })
 
     const createMutation = useMutation({
@@ -92,12 +98,24 @@ export default function LeavesPage() {
         createMutation.mutate(formData)
     }
 
-    if (!isAuthenticated()) return null
+    // Prevent hydration mismatch
+    if (!mounted) {
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <Navbar />
+                <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+                    <div className="px-4 py-6 sm:px-0">
+                        <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Leave Management</h1>

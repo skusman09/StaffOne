@@ -49,3 +49,17 @@ class TokenData(BaseModel):
 class RoleUpdate(BaseModel):
     """Schema for updating user role."""
     role: Role
+
+
+class ProfileUpdate(BaseModel):
+    """Schema for updating user profile."""
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    full_name: Optional[str] = None
+    timezone: Optional[str] = None
+
+
+class PasswordChange(BaseModel):
+    """Schema for changing password."""
+    current_password: str
+    new_password: str

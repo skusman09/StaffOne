@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse
-from app.services.auth_service import create_user, authenticate_user, create_tokens_for_user
+from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse, ProfileUpdate, PasswordChange
+from app.services.auth_service import create_user, authenticate_user, create_tokens_for_user, update_user_profile, change_user_password
 from app.utils.dependencies import get_current_user
 from app.models.user import User
 
@@ -49,3 +49,34 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     """
     return current_user
 
+
+@router.put("/profile", response_model=UserResponse)
+def update_profile(
+    profile_data: ProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update current user's profile information."""
+    return update_user_profile(
+        db=db,
+        user=current_user,
+        email=profile_data.email,
+        username=profile_data.username,
+        full_name=profile_data.full_name,
+        timezone=profile_data.timezone
+    )
+
+
+@router.put("/password", response_model=UserResponse)
+def change_password(
+    password_data: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Change current user's password."""
+    return change_user_password(
+        db=db,
+        user=current_user,
+        current_password=password_data.current_password,
+        new_password=password_data.new_password
+    )

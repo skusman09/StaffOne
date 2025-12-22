@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, Float, ForeignKey, Boolean, Enum as SQLEnum
+from sqlalchemy import Column, Integer, DateTime, String, Float, ForeignKey, Boolean, Enum as SQLEnum, TypeDecorator
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -13,6 +13,29 @@ class ShiftType(str, enum.Enum):
     OVERTIME = "overtime"  # Overtime work
 
 
+class SafeShiftType(TypeDecorator):
+    """Robust ShiftType handler that gracefully handles case-insensitivity from DB."""
+    impl = String
+    cache_ok = True
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        # Try to match case-insensitively
+        try:
+            return ShiftType(value.lower())
+        except ValueError:
+            # Fallback for unexpected values
+            return ShiftType.REGULAR
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if isinstance(value, ShiftType):
+            return value.value
+        return str(value).lower()
+
+
 class CheckInOut(Base):
     """Check-in/Check-out model for attendance tracking."""
     __tablename__ = "checkinouts"
@@ -22,8 +45,8 @@ class CheckInOut(Base):
     check_in_time = Column(DateTime, nullable=False, index=True)
     check_out_time = Column(DateTime, nullable=True)
     
-    # Shift tracking
-    shift_type = Column(SQLEnum(ShiftType), default=ShiftType.REGULAR, nullable=False)
+    # Shift tracking - using robust TypeDecorator
+    shift_type = Column(SafeShiftType(), default=ShiftType.REGULAR, nullable=False)
     shift_id = Column(String, default=lambda: str(uuid.uuid4()), nullable=False)  # Groups related entries
     
     # Location data

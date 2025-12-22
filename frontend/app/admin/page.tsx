@@ -14,8 +14,7 @@ type RoleFilter = 'all' | 'admin' | 'employee'
 
 export default function AdminPage() {
   const router = useRouter()
-
-  const authed = isAuthenticated()
+  const [mounted, setMounted] = useState(false)
 
   // Separate search states (prevents users search affecting attendance search)
   const [userSearchTerm, setUserSearchTerm] = useState('')
@@ -31,10 +30,17 @@ export default function AdminPage() {
   const [attendancePage, setAttendancePage] = useState(1)
   const itemsPerPage = 10
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const authed = mounted && isAuthenticated()
+
   // Redirect unauth users
   useEffect(() => {
-    if (!authed) router.push('/login')
-  }, [authed, router])
+    if (!mounted) return
+    if (!isAuthenticated()) router.push('/login')
+  }, [mounted, router])
 
   // Load current user
   const { data: user, isLoading: userLoading } = useQuery({
@@ -115,7 +121,25 @@ export default function AdminPage() {
     return list.filter((r: any) => new Date(r.check_in_time).toDateString() === today).length
   }, [attendance])
 
-  // ✅ Return AFTER all hooks (prevents "Rendered more hooks" crash)
+  const activeSessions = useMemo(() => {
+    const list = Array.isArray(attendance) ? attendance : []
+    return list.filter((r: any) => !r.check_out_time).length
+  }, [attendance])
+
+  // ✅ Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar />
+        <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+          <div className="px-4 py-6 sm:px-0">
+            <TableSkeleton rows={5} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!authed) return null
   if (userLoading) return <TableSkeleton rows={5} />
   if (!isAdmin) return null
@@ -179,13 +203,13 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+        <div className="sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Admin Dashboard</h1>
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
-            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 mb-8">
+            <div className="card">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
@@ -272,6 +296,34 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-6 w-6 text-gray-400 dark:text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Sessions</dt>
+                      <dd className="text-lg font-semibold text-gray-900 dark:text-gray-100">{activeSessions}</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Users Section */}
@@ -338,9 +390,8 @@ export default function AdminPage() {
                             </div>
 
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                              }`}
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                                }`}
                             >
                               {u.role}
                             </span>

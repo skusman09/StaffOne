@@ -30,10 +30,19 @@ const SHIFT_TYPE_CONFIG: Record<ShiftType, { label: string; color: string; bg: s
 export default function DashboardPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const [sessionUser, setSessionUser] = useState(getUser())
+  const [mounted, setMounted] = useState(false)
+  const [sessionUser, setSessionUser] = useState<any>(null)
   const [selectedShiftType, setSelectedShiftType] = useState<ShiftType>(SHIFT_TYPES.REGULAR)
 
+  // Client-side only initialization
   useEffect(() => {
+    setMounted(true)
+    setSessionUser(getUser())
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     if (!isAuthenticated()) {
       router.push('/login')
       return
@@ -47,12 +56,12 @@ export default function DashboardPage() {
       SessionManager.clearSession()
       setSessionUser(null)
     }
-  }, [router])
+  }, [router, mounted])
 
   const { data: user, error: userError, isLoading: userLoading } = useQuery({
     queryKey: ['user'],
     queryFn: authAPI.me,
-    enabled: isAuthenticated(),
+    enabled: mounted && isAuthenticated(),
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
     staleTime: 5 * 60 * 1000,
@@ -74,14 +83,14 @@ export default function DashboardPage() {
   const { data: todayStatus, isLoading: statusLoading, refetch: refetchTodayStatus } = useQuery({
     queryKey: ['todayStatus'],
     queryFn: attendanceAPI.getTodayStatus,
-    enabled: isAuthenticated(),
+    enabled: mounted && isAuthenticated(),
     refetchOnWindowFocus: true,
   })
 
   const { data: workingHours } = useQuery({
     queryKey: ['workingHours'],
     queryFn: () => attendanceAPI.getWorkingHours(30),
-    enabled: isAuthenticated(),
+    enabled: mounted && isAuthenticated(),
   })
 
   const checkInMutation = useMutation({
@@ -156,14 +165,24 @@ export default function DashboardPage() {
   const handleBreakIn = () => handleCheckIn(SHIFT_TYPES.BREAK)
   const handleOvertimeCheckIn = () => handleCheckIn(SHIFT_TYPES.OVERTIME)
 
-  if (!isAuthenticated()) {
-    return null
+  // Prevent hydration mismatch - show loading until client-side mounted
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar />
+        <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+          <div className="px-4 py-6 sm:px-0">
+            <DashboardSkeleton />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Dashboard</h1>
 
@@ -172,7 +191,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* Today's Status Card */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+              <div className="card">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Today's Status</h2>
@@ -218,102 +237,132 @@ export default function DashboardPage() {
               </div>
 
               {/* Actions Card */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Actions</h2>
+              <div className="card">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Actions</h2>
 
-                  {/* Check In Section */}
-                  {todayStatus?.can_check_in && (
-                    <div className="space-y-3 mb-4">
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Select shift type:</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          onClick={handleRegularCheckIn}
-                          disabled={checkInMutation.isPending}
-                          className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-2 rounded-md text-xs font-medium hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {checkInMutation.isPending ? '...' : '🏢 Regular'}
-                        </button>
-                        <button
-                          onClick={handleBreakIn}
-                          disabled={checkInMutation.isPending}
-                          className="bg-orange-600 dark:bg-orange-700 text-white px-3 py-2 rounded-md text-xs font-medium hover:bg-orange-700 dark:hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {checkInMutation.isPending ? '...' : '☕ Break'}
-                        </button>
-                        <button
-                          onClick={handleOvertimeCheckIn}
-                          disabled={checkInMutation.isPending}
-                          className="bg-purple-600 dark:bg-purple-700 text-white px-3 py-2 rounded-md text-xs font-medium hover:bg-purple-700 dark:hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {checkInMutation.isPending ? '...' : '⏰ Overtime'}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Check Out Section - shown when user is checked in */}
-                  {todayStatus?.can_check_out && (
-                    <div className="space-y-3">
+                {/* Check In Section */}
+                {todayStatus?.can_check_in && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Select shift type:</p>
+                    <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={handleCheckOut}
-                        disabled={checkOutMutation.isPending || statusLoading}
-                        className="w-full bg-red-600 dark:bg-red-700 text-white px-4 py-3 rounded-md text-sm font-medium hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        onClick={handleRegularCheckIn}
+                        disabled={checkInMutation.isPending}
+                        className="btn-primary btn-sm min-w-0"
                       >
-                        {checkOutMutation.isPending ? 'Checking out...' : `🔴 Check Out (${SHIFT_TYPE_CONFIG[todayStatus?.shift_type as ShiftType]?.label || 'Shift'})`}
+                        {checkInMutation.isPending ? (
+                          <span className="spinner" />
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span>Regular</span>
+                          </>
+                        )}
                       </button>
-
-                      {/* Quick Break Toggle - when on regular shift, allow starting a break */}
-                      {todayStatus?.shift_type === 'regular' && (
-                        <p className="text-xs text-gray-400 text-center">
-                          Check out first, then start a break shift
-                        </p>
-                      )}
+                      <button
+                        onClick={handleBreakIn}
+                        disabled={checkInMutation.isPending}
+                        className="btn-primary btn-sm bg-amber-600 hover:bg-amber-700 min-w-0"
+                      >
+                        {checkInMutation.isPending ? (
+                          <span className="spinner" />
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Break</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={handleOvertimeCheckIn}
+                        disabled={checkInMutation.isPending}
+                        className="btn-primary btn-sm bg-purple-600 hover:bg-purple-700 min-w-0"
+                      >
+                        {checkInMutation.isPending ? (
+                          <span className="spinner" />
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>Overtime</span>
+                          </>
+                        )}
+                      </button>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {/* Already checked out message */}
-                  {!todayStatus?.can_check_in && !todayStatus?.can_check_out && todayStatus?.check_out_time && (
-                    <div className="text-center py-4">
-                      <p className="text-green-600 dark:text-green-400 font-medium">✅ Shift completed!</p>
-                      <p className="text-xs text-gray-400 mt-1">You can start a new shift anytime</p>
-                    </div>
-                  )}
-                </div>
+                {/* Check Out Section - shown when user is checked in */}
+                {todayStatus?.can_check_out && (
+                  <div className="space-y-3 mt-4">
+                    <button
+                      onClick={handleCheckOut}
+                      disabled={checkOutMutation.isPending || statusLoading}
+                      className="btn-danger w-full"
+                    >
+                      {checkOutMutation.isPending ? 'Checking out...' : `Check Out (${SHIFT_TYPE_CONFIG[todayStatus?.shift_type as ShiftType]?.label || 'Shift'})`}
+                    </button>
+
+                    {todayStatus?.shift_type === 'regular' && (
+                      <p className="text-xs text-slate-400 text-center">
+                        Check out first, then start a break shift
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* No action available message */}
+                {!todayStatus?.can_check_in && !todayStatus?.can_check_out && (
+                  <>
+                    {todayStatus?.check_out_time ? (
+                      <div className="text-center py-4">
+                        <p className="text-green-600 dark:text-green-400 font-medium">✅ Shift completed!</p>
+                        <p className="text-xs text-gray-400 mt-1">You can start a new shift anytime</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        No actions available at this time.
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Working Hours Summary */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-                <div className="p-6">
-                  <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Last 30 Days</h2>
-                  {workingHours ? (
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">Total Hours:</span>
-                        <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                          {workingHours.total_hours.toFixed(1)}h
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 text-sm">
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Regular:</span>
-                          <p className="font-medium text-blue-600 dark:text-blue-400">{workingHours.regular_hours.toFixed(1)}h</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Overtime:</span>
-                          <p className="font-medium text-purple-600 dark:text-purple-400">{workingHours.overtime_hours.toFixed(1)}h</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500 dark:text-gray-400">Break:</span>
-                          <p className="font-medium text-orange-600 dark:text-orange-400">{workingHours.break_hours?.toFixed(1) || '0.0'}h</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-400">{workingHours.records_count} records</p>
+              <div className="card">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Last 30 Days</h2>
+                {workingHours ? (
+                  <div className="space-y-3">
+                    <div>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Total Hours:</span>
+                      <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                        {workingHours.total_hours.toFixed(1)}h
+                      </p>
                     </div>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400">No data yet</p>
-                  )}
-                </div>
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Regular:</span>
+                        <p className="font-medium text-blue-600 dark:text-blue-400">{workingHours.regular_hours.toFixed(1)}h</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Overtime:</span>
+                        <p className="font-medium text-purple-600 dark:text-purple-400">{workingHours.overtime_hours.toFixed(1)}h</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 dark:text-gray-400">Break:</span>
+                        <p className="font-medium text-orange-600 dark:text-orange-400">{workingHours.break_hours?.toFixed(1) || '0.0'}h</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400">{workingHours.records_count} records</p>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">No data yet</p>
+                )}
               </div>
             </div>
           )}
@@ -322,22 +371,32 @@ export default function DashboardPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/history"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900 hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+              className="btn-secondary"
             >
-              📋 Attendance History
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Attendance History
             </Link>
             <Link
               href="/leaves"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900 hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors"
+              className="btn-secondary"
             >
-              🏖️ Leave Requests
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Leave Requests
             </Link>
             {user?.role === 'admin' && (
               <Link
                 href="/admin"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+                className="btn-secondary"
               >
-                ⚙️ Admin Panel
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Admin Panel
               </Link>
             )}
           </div>

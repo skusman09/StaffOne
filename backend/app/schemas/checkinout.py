@@ -33,7 +33,7 @@ class CheckInOutResponse(BaseModel):
     check_in_time: datetime
     check_out_time: Optional[datetime]
     shift_type: ShiftType
-    shift_id: str
+    shift_id: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
     checkout_latitude: Optional[float]

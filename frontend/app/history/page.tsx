@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { attendanceAPI } from '@/lib/api'
@@ -9,33 +9,49 @@ import Navbar from '@/components/Navbar'
 
 export default function HistoryPage() {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
     if (!isAuthenticated()) {
       router.push('/login')
     }
-  }, [router])
+  }, [router, mounted])
 
   const { data: history, isLoading } = useQuery({
     queryKey: ['history'],
     queryFn: () => attendanceAPI.getHistory(0, 100),
-    enabled: isAuthenticated(),
+    enabled: mounted && isAuthenticated(),
   })
 
   const { data: workingHours } = useQuery({
     queryKey: ['workingHours'],
     queryFn: () => attendanceAPI.getWorkingHours(30),
-    enabled: isAuthenticated(),
+    enabled: mounted && isAuthenticated(),
   })
 
-  if (!isAuthenticated()) {
-    return null
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <Navbar />
+        <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+          <div className="px-4 py-6 sm:px-0">
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Attendance History</h1>
 

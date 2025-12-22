@@ -2,26 +2,255 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+/* ============================================
+   DESIGN SYSTEM FOUNDATION
+   ============================================ */
+
+@layer base {
+
+  /* CSS Variables for Theme */
+  :root {
+    --primary: 79 70 229;
+    /* indigo-600 */
+    --primary-hover: 67 56 202;
+    /* indigo-700 */
+    --success: 5 150 105;
+    /* emerald-600 */
+    --warning: 217 119 6;
+    /* amber-600 */
+    --error: 225 29 72;
+    /* rose-600 */
+  }
+
+  /* Typography Defaults */
+  body {
+    @apply text-slate-900 dark:text-slate-100 antialiased;
+  }
+
+  /* Headings */
+  h1 {
+    @apply text-3xl font-bold tracking-tight text-slate-900 dark:text-white;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold tracking-tight text-slate-900 dark:text-white;
+  }
+
+  h3 {
+    @apply text-xl font-semibold text-slate-900 dark:text-white;
+  }
+
+  h4 {
+    @apply text-lg font-medium text-slate-900 dark:text-white;
+  }
 }
 
-.dark {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 17, 24, 39;
-  --background-end-rgb: 31, 41, 55;
+/* ============================================
+   COMPONENT LIBRARY
+   ============================================ */
+
+@layer components {
+  /* ========== BUTTONS ========== */
+
+  .btn {
+    @apply h-10 px-4 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply btn bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400;
+  }
+
+  .btn-danger {
+    @apply btn bg-rose-600 hover:bg-rose-700 text-white active:scale-95;
+  }
+
+  .btn-sm {
+    @apply h-8 px-3 text-sm;
+  }
+
+  .btn-lg {
+    @apply h-12 px-6 text-base;
+  }
+
+  /* ========== INPUTS ========== */
+
+  .input {
+    @apply h-10 w-full px-4 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200;
+  }
+
+  .input-error {
+    @apply border-rose-300 dark:border-rose-600 focus:ring-rose-500/20 focus:border-rose-500;
+  }
+
+  .input-sm {
+    @apply h-8 px-3 text-sm;
+  }
+
+  .input-lg {
+    @apply h-12 px-4 text-base;
+  }
+
+  /* ========== CARDS ========== */
+
+  .card {
+    @apply bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6;
+  }
+
+  .card-hover {
+    @apply card hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200;
+  }
+
+  .card-interactive {
+    @apply card-hover cursor-pointer hover:-translate-y-0.5 active:translate-y-0;
+  }
+
+  /* ========== BADGES ========== */
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-primary {
+    @apply badge bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300;
+  }
+
+  .badge-success {
+    @apply badge bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300;
+  }
+
+  .badge-error {
+    @apply badge bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300;
+  }
+
+  /* ========== TABLES ========== */
+
+  .table-container {
+    @apply overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700;
+  }
+
+  .table {
+    @apply w-full text-sm text-left;
+  }
+
+  .table-header {
+    @apply bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700;
+  }
+
+  .table-header-cell {
+    @apply px-6 py-3 font-semibold text-slate-900 dark:text-slate-100 text-xs uppercase tracking-wider;
+  }
+
+  .table-row {
+    @apply border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 text-slate-600 dark:text-slate-400;
+  }
+
+  /* ========== LOADING STATES ========== */
+
+  .skeleton {
+    @apply bg-slate-200 dark:bg-slate-700 rounded animate-pulse;
+  }
+
+  .spinner {
+    @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+  }
+
+  /* ========== EMPTY STATES ========== */
+
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-12 px-4 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-16 h-16 text-slate-400 dark:text-slate-600 mb-4;
+  }
+
+  .empty-state-title {
+    @apply text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2;
+  }
+
+  .empty-state-description {
+    @apply text-sm text-slate-600 dark:text-slate-400 mb-4 max-w-sm;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
+/* ============================================
+   ANIMATIONS
+   ============================================ */
 
+@layer utilities {
+  .animate-dropdown {
+    animation: slideDown 0.2s ease-out;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
+}
