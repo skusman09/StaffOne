@@ -73,3 +73,20 @@ class WorkingHoursSummary(BaseModel):
     records_count: int
 
 
+class MonthlyStatistics(BaseModel):
+    """Monthly attendance statistics."""
+    year: int
+    month: int
+    month_name: str
+    total_days_in_month: int
+    working_days_in_month: int  # Excludes weekends
+    days_worked: int
+    days_absent: int
+    total_hours: float
+    regular_hours: float
+    overtime_hours: float
+    break_hours: float
+    avg_hours_per_day: float
+    attendance_percentage: float
+
+

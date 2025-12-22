@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from app.database import get_db
 from app.schemas.checkinout import (
     CheckInCreate,
     CheckOutCreate,
     CheckInOutResponse,
     CheckInOutTodayResponse,
-    WorkingHoursSummary
+    WorkingHoursSummary,
+    MonthlyStatistics
 )
 from app.services.attendance_service import (
     check_in_user,
@@ -16,7 +17,8 @@ from app.services.attendance_service import (
     get_today_checkinout,
     get_active_shift,
     get_user_attendance_history,
-    get_working_hours_summary
+    get_working_hours_summary,
+    get_monthly_statistics
 )
 from app.utils.dependencies import get_current_user
 from app.models.user import User
@@ -91,11 +93,21 @@ def get_my_today_status(
 def get_my_history(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
+    start_date: Optional[date] = Query(None, description="Filter records from this date (YYYY-MM-DD)"),
+    end_date: Optional[date] = Query(None, description="Filter records until this date (YYYY-MM-DD)"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get attendance history for current user."""
-    history = get_user_attendance_history(db, current_user.id, skip, limit)
+    """Get attendance history for current user with optional date range filtering."""
+    # Convert date to datetime for filtering
+    start_datetime = datetime.combine(start_date, datetime.min.time()) if start_date else None
+    end_datetime = datetime.combine(end_date, datetime.max.time()) if end_date else None
+    
+    history = get_user_attendance_history(
+        db, current_user.id, skip, limit, 
+        start_date=start_datetime, 
+        end_date=end_datetime
+    )
     return history
 
 
@@ -115,3 +127,24 @@ def get_my_working_hours(
         date=f"Last {days} days",
         **summary
     )
+
+
+@router.get("/monthly-stats", response_model=MonthlyStatistics)
+def get_my_monthly_stats(
+    year: int = Query(..., ge=2020, le=2100, description="Year (e.g., 2024)"),
+    month: int = Query(..., ge=1, le=12, description="Month (1-12)"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get monthly attendance statistics for current user.
+    
+    Returns comprehensive monthly stats including:
+    - Total days in month and working days
+    - Days worked and absences
+    - Total, regular, overtime, and break hours
+    - Average hours per day
+    - Attendance percentage
+    """
+    stats = get_monthly_statistics(db, current_user.id, year, month)
+    return MonthlyStatistics(**stats)
+

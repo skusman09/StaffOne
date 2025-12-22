@@ -11,6 +11,15 @@ export default function HistoryPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
+  // Date range filter state
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+
+  // Monthly stats state
+  const currentDate = new Date()
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1)
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -22,9 +31,9 @@ export default function HistoryPage() {
     }
   }, [router, mounted])
 
-  const { data: history, isLoading } = useQuery({
-    queryKey: ['history'],
-    queryFn: () => attendanceAPI.getHistory(0, 100),
+  const { data: history, isLoading, refetch } = useQuery({
+    queryKey: ['history', startDate, endDate],
+    queryFn: () => attendanceAPI.getHistory(0, 100, startDate || undefined, endDate || undefined),
     enabled: mounted && isAuthenticated(),
   })
 
@@ -33,6 +42,28 @@ export default function HistoryPage() {
     queryFn: () => attendanceAPI.getWorkingHours(30),
     enabled: mounted && isAuthenticated(),
   })
+
+  const { data: monthlyStats, isLoading: monthlyLoading } = useQuery({
+    queryKey: ['monthlyStats', selectedYear, selectedMonth],
+    queryFn: () => attendanceAPI.getMonthlyStats(selectedYear, selectedMonth),
+    enabled: mounted && isAuthenticated(),
+  })
+
+  const handleFilter = () => {
+    refetch()
+  }
+
+  const handleClearFilter = () => {
+    setStartDate('')
+    setEndDate('')
+  }
+
+  // Generate year options (last 5 years)
+  const yearOptions = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i)
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
 
   // Prevent hydration mismatch
   if (!mounted) {
@@ -55,7 +86,67 @@ export default function HistoryPage() {
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Attendance History</h1>
 
-          {/* Summary Card */}
+          {/* Monthly Statistics Card */}
+          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl p-6 mb-6 shadow-lg">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+              <h2 className="text-lg font-semibold mb-3 md:mb-0">📅 Monthly Statistics</h2>
+              <div className="flex gap-2">
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                  className="px-3 py-1.5 rounded-lg bg-white/20 border border-white/30 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  {monthNames.map((name, i) => (
+                    <option key={i} value={i + 1} className="text-gray-900">{name}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="px-3 py-1.5 rounded-lg bg-white/20 border border-white/30 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  {yearOptions.map((year) => (
+                    <option key={year} value={year} className="text-gray-900">{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {monthlyLoading ? (
+              <div className="text-center py-4 text-white/70">Loading monthly stats...</div>
+            ) : monthlyStats ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Days Worked</p>
+                  <p className="text-2xl font-bold">{monthlyStats.days_worked}<span className="text-sm font-normal text-white/70">/{monthlyStats.working_days_in_month}</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Absences</p>
+                  <p className="text-2xl font-bold text-red-300">{monthlyStats.days_absent}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Total Hours</p>
+                  <p className="text-2xl font-bold">{monthlyStats.total_hours}<span className="text-sm font-normal">h</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Overtime</p>
+                  <p className="text-2xl font-bold text-yellow-300">{monthlyStats.overtime_hours}<span className="text-sm font-normal">h</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Avg/Day</p>
+                  <p className="text-2xl font-bold">{monthlyStats.avg_hours_per_day}<span className="text-sm font-normal">h</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Attendance</p>
+                  <p className="text-2xl font-bold text-green-300">{monthlyStats.attendance_percentage}<span className="text-sm font-normal">%</span></p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4 text-white/70">No data available</div>
+            )}
+          </div>
+
+          {/* Summary Card (Last 30 Days) */}
           {workingHours && (
             <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-6 mb-6 shadow-lg">
               <h2 className="text-lg font-medium mb-3">Last 30 Days Summary</h2>
@@ -80,6 +171,51 @@ export default function HistoryPage() {
             </div>
           )}
 
+          {/* Date Range Filter */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 shadow">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">🔍 Filter by Date Range</h3>
+            <div className="flex flex-wrap gap-3 items-end">
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Start Date</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">End Date</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                />
+              </div>
+              <button
+                onClick={handleFilter}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm font-medium transition-colors"
+              >
+                Apply Filter
+              </button>
+              {(startDate || endDate) && (
+                <button
+                  onClick={handleClearFilter}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {(startDate || endDate) && (
+              <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-2">
+                Showing records {startDate && `from ${startDate}`} {endDate && `to ${endDate}`}
+              </p>
+            )}
+          </div>
+
+          {/* History List */}
           {isLoading ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
           ) : history && history.length > 0 ? (
@@ -157,10 +293,13 @@ export default function HistoryPage() {
               </ul>
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500 dark:text-gray-400">No attendance records found</div>
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              {startDate || endDate ? 'No records found for the selected date range' : 'No attendance records found'}
+            </div>
           )}
         </div>
       </div>
     </div>
   )
 }
+

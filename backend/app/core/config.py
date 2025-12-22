@@ -25,6 +25,17 @@ class Settings(BaseSettings):
     GEOFENCING_MODE: str = "flag"  # "block" or "flag" - block rejects, flag allows but marks
     DEFAULT_GEOFENCE_RADIUS_METERS: float = 100.0  # Default radius for office locations
     
+    # HRMS / Salary Settings
+    OFFICE_STANDARD_HOURS: float = 9.0  # Standard working hours per day (for salary calc)
+    OVERTIME_MULTIPLIER: float = 1.5  # Overtime pay multiplier
+    DEDUCTION_RATE: float = 1.0  # Undertime deduction rate (1x hourly rate)
+    WEEKEND_DAYS: str = "5,6"  # Saturday=5, Sunday=6 (comma-separated)
+    
+    @property
+    def weekend_days_list(self) -> list[int]:
+        """Convert weekend days string to list of integers."""
+        return [int(d.strip()) for d in self.WEEKEND_DAYS.split(",")]
+    
     @property
     def cors_origins_list(self) -> list[str]:
         """Convert comma-separated CORS origins string to list."""

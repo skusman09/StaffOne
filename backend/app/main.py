@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from app.core.config import settings
-from app.routes import auth, attendance, admin, locations, leaves, notifications, analytics
+from app.routes import auth, attendance, admin, locations, leaves, notifications, analytics, reports, holidays, payroll
 from app.database import Base, engine
 
 # Create database tables on startup (only if using SQLite or for development)
@@ -96,6 +96,9 @@ app.include_router(locations.router)
 app.include_router(leaves.router)
 app.include_router(notifications.router)
 app.include_router(analytics.router)
+app.include_router(reports.router)
+app.include_router(holidays.router)
+app.include_router(payroll.router)
 
 
 @app.get("/")

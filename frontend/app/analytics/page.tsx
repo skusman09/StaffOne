@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { analyticsAPI, authAPI } from '@/lib/api'
+import { analyticsAPI, authAPI, adminAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 
@@ -42,6 +42,7 @@ function SimpleBarChart({ data, dataKey, labelKey, color = '#6366f1' }: {
 export default function AnalyticsPage() {
     const router = useRouter()
     const [days, setDays] = useState(7)
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null)
 
     useEffect(() => {
         if (!isAuthenticated()) {
@@ -68,6 +69,22 @@ export default function AnalyticsPage() {
         queryFn: () => analyticsAPI.getMyStats(days),
         enabled: isAuthenticated(),
     })
+
+    // Get all users for employee selector (admin only)
+    const { data: allUsers } = useQuery({
+        queryKey: ['all-users'],
+        queryFn: () => adminAPI.getUsers(0, 200),
+        enabled: isAuthenticated() && isAdmin,
+    })
+
+    // Get selected employee's stats (admin only)
+    const { data: selectedEmployeeStats, isLoading: employeeStatsLoading } = useQuery({
+        queryKey: ['employee-stats', selectedEmployeeId, days],
+        queryFn: () => analyticsAPI.getUserStats(selectedEmployeeId!, days),
+        enabled: isAuthenticated() && isAdmin && selectedEmployeeId !== null,
+    })
+
+    const selectedEmployee = allUsers?.find((u: any) => u.id === selectedEmployeeId)
 
     if (!isAuthenticated()) return null
 
@@ -232,6 +249,75 @@ export default function AnalyticsPage() {
                                 </div>
                             )}
                         </>
+                    )}
+
+                    {/* Individual Employee Stats (Admin) */}
+                    {isAdmin && allUsers && allUsers.length > 0 && (
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">👤 Individual Employee Performance</h3>
+                            <div className="flex flex-wrap gap-4 mb-4">
+                                <select
+                                    value={selectedEmployeeId || ''}
+                                    onChange={(e) => setSelectedEmployeeId(e.target.value ? Number(e.target.value) : null)}
+                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                                >
+                                    <option value="">Select an employee...</option>
+                                    {allUsers.map((user: any) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.full_name || user.username} (@{user.username})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {selectedEmployeeId && (
+                                <div>
+                                    {employeeStatsLoading ? (
+                                        <div className="text-center py-4 text-gray-500">Loading employee stats...</div>
+                                    ) : selectedEmployeeStats ? (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                                    {selectedEmployee?.full_name || selectedEmployee?.username}
+                                                </span>
+                                                <span className="text-sm text-gray-500">@{selectedEmployee?.username}</span>
+                                            </div>
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Total Hours</p>
+                                                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedEmployeeStats.total_hours}h</p>
+                                                </div>
+                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Avg Daily</p>
+                                                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{selectedEmployeeStats.avg_daily_hours}h</p>
+                                                </div>
+                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Overtime</p>
+                                                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{selectedEmployeeStats.overtime_hours}h</p>
+                                                </div>
+                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Days Worked</p>
+                                                    <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{selectedEmployeeStats.total_records}</p>
+                                                </div>
+                                                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
+                                                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{selectedEmployeeStats.pending_checkouts}</p>
+                                                </div>
+                                            </div>
+                                            {/* Daily breakdown for selected employee */}
+                                            {selectedEmployeeStats.daily_breakdown && selectedEmployeeStats.daily_breakdown.length > 0 && (
+                                                <div className="mt-4">
+                                                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Daily Hours</h4>
+                                                    <SimpleBarChart data={selectedEmployeeStats.daily_breakdown} dataKey="hours" labelKey="date" color="#8b5cf6" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500">No data available for this employee</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     )}
 
                     {/* Non-admin message */}

@@ -34,6 +34,9 @@ export default function DashboardPage() {
   const [sessionUser, setSessionUser] = useState<any>(null)
   const [selectedShiftType, setSelectedShiftType] = useState<ShiftType>(SHIFT_TYPES.REGULAR)
 
+  // Real-time duration timer
+  const [liveDuration, setLiveDuration] = useState<string>('')
+
   // Client-side only initialization
   useEffect(() => {
     setMounted(true)
@@ -92,6 +95,38 @@ export default function DashboardPage() {
     queryFn: () => attendanceAPI.getWorkingHours(30),
     enabled: mounted && isAuthenticated(),
   })
+
+  // Monthly statistics
+  const currentDate = new Date()
+  const { data: monthlyStats } = useQuery({
+    queryKey: ['monthlyStats', currentDate.getFullYear(), currentDate.getMonth() + 1],
+    queryFn: () => attendanceAPI.getMonthlyStats(currentDate.getFullYear(), currentDate.getMonth() + 1),
+    enabled: mounted && isAuthenticated(),
+  })
+
+  // Real-time duration timer effect
+  useEffect(() => {
+    if (!todayStatus?.check_in_time || todayStatus?.check_out_time) {
+      setLiveDuration('')
+      return
+    }
+
+    const updateDuration = () => {
+      const checkInTime = new Date(todayStatus.check_in_time).getTime()
+      const now = Date.now()
+      const diff = now - checkInTime
+
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+      setLiveDuration(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`)
+    }
+
+    updateDuration()
+    const interval = setInterval(updateDuration, 1000)
+    return () => clearInterval(interval)
+  }, [todayStatus?.check_in_time, todayStatus?.check_out_time])
 
   const checkInMutation = useMutation({
     mutationFn: attendanceAPI.checkIn,
@@ -227,7 +262,21 @@ export default function DashboardPage() {
                           )}
                         </>
                       ) : (
-                        <p className="text-sm text-yellow-600 dark:text-yellow-400">⏳ Still working...</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                            </span>
+                            <span className="text-sm text-green-600 dark:text-green-400">Currently working</span>
+                          </div>
+                          {liveDuration && (
+                            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg p-4">
+                              <p className="text-xs text-green-100 mb-1">Working Duration</p>
+                              <p className="text-3xl font-mono font-bold tracking-wider">{liveDuration}</p>
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   ) : (
@@ -367,6 +416,38 @@ export default function DashboardPage() {
             </div>
           )}
 
+          {/* Monthly Statistics Card */}
+          {monthlyStats && (
+            <div className="mt-6 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl p-6 shadow-lg">
+              <h2 className="text-lg font-semibold mb-4">📅 {monthlyStats.month_name} {monthlyStats.year} Statistics</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Days Worked</p>
+                  <p className="text-2xl font-bold">{monthlyStats.days_worked}<span className="text-sm font-normal text-white/70">/{monthlyStats.working_days_in_month}</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Absences</p>
+                  <p className="text-2xl font-bold text-red-300">{monthlyStats.days_absent}</p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Total Hours</p>
+                  <p className="text-2xl font-bold">{monthlyStats.total_hours}<span className="text-sm font-normal">h</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Overtime</p>
+                  <p className="text-2xl font-bold text-yellow-300">{monthlyStats.overtime_hours}<span className="text-sm font-normal">h</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Avg/Day</p>
+                  <p className="text-2xl font-bold">{monthlyStats.avg_hours_per_day}<span className="text-sm font-normal">h</span></p>
+                </div>
+                <div className="bg-white/10 rounded-lg p-3">
+                  <p className="text-white/70 text-xs">Attendance</p>
+                  <p className="text-2xl font-bold text-green-300">{monthlyStats.attendance_percentage}<span className="text-sm font-normal">%</span></p>
+                </div>
+              </div>
+            </div>
+          )}
           {/* Quick Links */}
           <div className="mt-6 flex flex-wrap gap-3">
             <Link

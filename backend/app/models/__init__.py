@@ -3,10 +3,14 @@ from app.models.checkinout import CheckInOut, ShiftType
 from app.models.location import Location
 from app.models.leave import Leave, LeaveType, LeaveStatus
 from app.models.notification import Notification, NotificationPreferences, NotificationType, NotificationStatus
+from app.models.holiday import Holiday
+from app.models.salary import SalaryConfig, SalaryRecord, SalaryStatus, SystemConfig
 
 __all__ = [
     "User", "Role", "CheckInOut", "ShiftType", "Location", 
     "Leave", "LeaveType", "LeaveStatus",
-    "Notification", "NotificationPreferences", "NotificationType", "NotificationStatus"
+    "Notification", "NotificationPreferences", "NotificationType", "NotificationStatus",
+    "Holiday", "SalaryConfig", "SalaryRecord", "SalaryStatus", "SystemConfig"
 ]
+
 

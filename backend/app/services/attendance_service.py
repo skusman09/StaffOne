@@ -223,12 +223,21 @@ def get_user_attendance_history(
     db: Session,
     user_id: int,
     skip: int = 0,
-    limit: int = 100
+    limit: int = 100,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None
 ) -> list[CheckInOut]:
-    """Get attendance history for a user."""
-    return db.query(CheckInOut).filter(
-        CheckInOut.user_id == user_id
-    ).order_by(CheckInOut.check_in_time.desc()).offset(skip).limit(limit).all()
+    """Get attendance history for a user with optional date range filtering."""
+    query = db.query(CheckInOut).filter(CheckInOut.user_id == user_id)
+    
+    if start_date:
+        query = query.filter(CheckInOut.check_in_time >= start_date)
+    if end_date:
+        # Add one day to include the entire end date
+        end_datetime = datetime.combine(end_date.date(), datetime.max.time()) if isinstance(end_date, datetime) else end_date
+        query = query.filter(CheckInOut.check_in_time <= end_datetime)
+    
+    return query.order_by(CheckInOut.check_in_time.desc()).offset(skip).limit(limit).all()
 
 
 def get_all_attendance(
@@ -286,3 +295,76 @@ def get_working_hours_summary(
         "break_hours": round(break_hours, 2),
         "records_count": len(records)
     }
+
+
+def get_monthly_statistics(
+    db: Session,
+    user_id: int,
+    year: int,
+    month: int
+) -> dict:
+    """Get monthly attendance statistics for a user.
+    
+    Calculates total days, days worked, absences, hours breakdown,
+    and attendance percentage for the specified month.
+    """
+    import calendar
+    
+    # Get month boundaries
+    _, days_in_month = calendar.monthrange(year, month)
+    month_start = datetime(year, month, 1, 0, 0, 0)
+    month_end = datetime(year, month, days_in_month, 23, 59, 59)
+    
+    # Calculate working days (excluding weekends)
+    working_days = 0
+    for day in range(1, days_in_month + 1):
+        date_obj = datetime(year, month, day)
+        if date_obj.weekday() < 5:  # Monday = 0, Friday = 4
+            working_days += 1
+    
+    # Get all records for the month
+    records = db.query(CheckInOut).filter(
+        CheckInOut.user_id == user_id,
+        CheckInOut.check_in_time >= month_start,
+        CheckInOut.check_in_time <= month_end
+    ).all()
+    
+    # Count unique days worked
+    days_with_records = set()
+    total_hours = 0.0
+    regular_hours = 0.0
+    overtime_hours = 0.0
+    break_hours = 0.0
+    
+    for record in records:
+        days_with_records.add(record.check_in_time.date())
+        if record.hours_worked:
+            total_hours += record.hours_worked
+            if record.shift_type == ShiftType.REGULAR:
+                regular_hours += record.hours_worked
+            elif record.shift_type == ShiftType.OVERTIME:
+                overtime_hours += record.hours_worked
+            elif record.shift_type == ShiftType.BREAK:
+                break_hours += record.hours_worked
+    
+    days_worked = len(days_with_records)
+    days_absent = max(0, working_days - days_worked)
+    avg_hours = total_hours / days_worked if days_worked > 0 else 0
+    attendance_pct = (days_worked / working_days * 100) if working_days > 0 else 0
+    
+    return {
+        "year": year,
+        "month": month,
+        "month_name": calendar.month_name[month],
+        "total_days_in_month": days_in_month,
+        "working_days_in_month": working_days,
+        "days_worked": days_worked,
+        "days_absent": days_absent,
+        "total_hours": round(total_hours, 2),
+        "regular_hours": round(regular_hours, 2),
+        "overtime_hours": round(overtime_hours, 2),
+        "break_hours": round(break_hours, 2),
+        "avg_hours_per_day": round(avg_hours, 2),
+        "attendance_percentage": round(attendance_pct, 1)
+    }
+

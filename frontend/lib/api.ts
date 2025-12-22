@@ -195,12 +195,19 @@ export const attendanceAPI = {
     const response = await api.get('/attendance/my-today')
     return response.data
   },
-  getHistory: async (skip = 0, limit = 100) => {
-    const response = await api.get(`/attendance/history?skip=${skip}&limit=${limit}`)
+  getHistory: async (skip = 0, limit = 100, startDate?: string, endDate?: string) => {
+    let url = `/attendance/history?skip=${skip}&limit=${limit}`
+    if (startDate) url += `&start_date=${startDate}`
+    if (endDate) url += `&end_date=${endDate}`
+    const response = await api.get(url)
     return response.data
   },
   getWorkingHours: async (days = 30) => {
     const response = await api.get(`/attendance/working-hours?days=${days}`)
+    return response.data
+  },
+  getMonthlyStats: async (year: number, month: number) => {
+    const response = await api.get(`/attendance/monthly-stats?year=${year}&month=${month}`)
     return response.data
   },
 }
@@ -228,6 +235,82 @@ export const adminAPI = {
   },
   updateNotes: async (recordId: number, notes: string) => {
     const response = await api.patch(`/admin/attendance/${recordId}/notes?admin_notes=${encodeURIComponent(notes)}`)
+    return response.data
+  },
+}
+
+// Reports API
+export const reportsAPI = {
+  getAdminSummary: async (userId?: number, startDate?: string, endDate?: string) => {
+    let url = '/reports/admin-summary'
+    const params = new URLSearchParams()
+    if (userId) params.append('user_id', userId.toString())
+    if (startDate) params.append('start_date', startDate)
+    if (endDate) params.append('end_date', endDate)
+    if (params.toString()) url += `?${params.toString()}`
+    const response = await api.get(url)
+    return response.data
+  },
+}
+
+// Holiday API
+export const holidayAPI = {
+  getAll: async (year?: number, activeOnly = true) => {
+    let url = `/holidays?active_only=${activeOnly}`
+    if (year) url += `&year=${year}`
+    const response = await api.get(url)
+    return response.data
+  },
+  create: async (data: { holiday_date: string; name: string; description?: string }) => {
+    const response = await api.post('/holidays', data)
+    return response.data
+  },
+  update: async (id: number, data: { holiday_date?: string; name?: string; description?: string; is_active?: boolean }) => {
+    const response = await api.put(`/holidays/${id}`, data)
+    return response.data
+  },
+  delete: async (id: number) => {
+    await api.delete(`/holidays/${id}`)
+  },
+}
+
+// Payroll API
+export const payrollAPI = {
+  // User endpoints
+  getMyAttendance: async (startDate: string, endDate: string) => {
+    const response = await api.get(`/payroll/my-attendance?start_date=${startDate}&end_date=${endDate}`)
+    return response.data
+  },
+  getMySalary: async (year: number, month: number) => {
+    const response = await api.get(`/payroll/my-salary?year=${year}&month=${month}`)
+    return response.data
+  },
+
+  // Admin endpoints
+  getAdminAttendance: async (startDate: string, endDate: string, userId?: number) => {
+    let url = `/payroll/admin/attendance?start_date=${startDate}&end_date=${endDate}`
+    if (userId) url += `&user_id=${userId}`
+    const response = await api.get(url)
+    return response.data
+  },
+  getSalaryConfig: async (userId: number) => {
+    const response = await api.get(`/payroll/admin/salary-config/${userId}`)
+    return response.data
+  },
+  createSalaryConfig: async (data: { user_id: number; monthly_base_salary: number; effective_from: string; overtime_multiplier?: number; deduction_rate_per_hour?: number }) => {
+    const response = await api.post('/payroll/admin/salary-config', data)
+    return response.data
+  },
+  generatePayroll: async (year: number, month: number, userId?: number) => {
+    const response = await api.post('/payroll/admin/generate', { year, month, user_id: userId })
+    return response.data
+  },
+  getPayroll: async (year: number, month: number) => {
+    const response = await api.get(`/payroll/admin/payroll?year=${year}&month=${month}`)
+    return response.data
+  },
+  approveSalary: async (recordId: number) => {
+    const response = await api.patch(`/payroll/admin/salary/${recordId}/approve`)
     return response.data
   },
 }
