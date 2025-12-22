@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Check-In/Check-Out System',
+  title: 'PunchClock',
   description: 'Employee attendance tracking system',
 }
 
