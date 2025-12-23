@@ -5,12 +5,16 @@ from app.models.leave import Leave, LeaveType, LeaveStatus
 from app.models.notification import Notification, NotificationPreferences, NotificationType, NotificationStatus
 from app.models.holiday import Holiday
 from app.models.salary import SalaryConfig, SalaryRecord, SalaryStatus, SystemConfig
+from app.models.audit import AuditLog
+from app.models.department import Department
+from app.models.compoff import CompOff, CompOffStatus
 
 __all__ = [
     "User", "Role", "CheckInOut", "ShiftType", "Location", 
     "Leave", "LeaveType", "LeaveStatus",
     "Notification", "NotificationPreferences", "NotificationType", "NotificationStatus",
-    "Holiday", "SalaryConfig", "SalaryRecord", "SalaryStatus", "SystemConfig"
+    "Holiday", "SalaryConfig", "SalaryRecord", "SalaryStatus", "SystemConfig",
+    "AuditLog", "Department", "CompOff", "CompOffStatus"
 ]
 
 

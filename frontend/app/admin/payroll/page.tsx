@@ -70,6 +70,10 @@ export default function PayrollPage() {
         },
     })
 
+    const exportPdfMutation = useMutation({
+        mutationFn: () => payrollAPI.exportPdf(selectedYear, selectedMonth),
+    })
+
     if (!mounted || userLoading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -145,12 +149,24 @@ export default function PayrollPage() {
                             >
                                 {generateMutation.isPending ? 'Generating...' : '🔄 Generate Payroll'}
                             </button>
+                            {payrollData && (
+                                <button
+                                    onClick={() => exportPdfMutation.mutate()}
+                                    disabled={exportPdfMutation.isPending}
+                                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    {exportPdfMutation.isPending ? 'Exporting...' : '📄 Export PDF'}
+                                </button>
+                            )}
                         </div>
                         {generateMutation.isSuccess && (
                             <p className="mt-3 text-sm text-green-600 dark:text-green-400">✓ Payroll generated successfully!</p>
                         )}
                         {generateMutation.isError && (
                             <p className="mt-3 text-sm text-red-600 dark:text-red-400">Error generating payroll</p>
+                        )}
+                        {exportPdfMutation.isSuccess && (
+                            <p className="mt-3 text-sm text-green-600 dark:text-green-400">✓ PDF downloaded!</p>
                         )}
                     </div>
 

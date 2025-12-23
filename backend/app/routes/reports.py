@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 from typing import Optional, Dict
@@ -10,8 +11,31 @@ from app.models.checkinout import CheckInOut
 from app.models.user import User
 from app.schemas.reports import AdminReportUserSummary, AdminReportResponse
 from app.utils.dependencies import get_current_admin_user
+from app.utils.excel_generator import generate_attendance_summary_excel
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+@router.get("/export/excel")
+def export_attendance_excel(
+    user_id: Optional[int] = Query(None),
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    current_user: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Export attendance summary as Excel. Admin only."""
+    # Reuse the logic from summary endpoint (refactor into a helper if it were more complex)
+    report = get_admin_attendance_summary(user_id, start_date, end_date, current_user, db)
+    
+    excel_file = generate_attendance_summary_excel(report.model_dump())
+    
+    filename = f"attendance_report_{report.start_date}_to_{report.end_date}.xlsx"
+    return StreamingResponse(
+        excel_file,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 def get_default_date_range() -> tuple[date, date]:

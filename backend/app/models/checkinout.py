@@ -63,6 +63,12 @@ class CheckInOut(Base):
     # Working hours
     hours_worked = Column(Float, nullable=True)  # Calculated on checkout
     
+    # Late arrival / Early exit tracking
+    is_late_arrival = Column(Boolean, default=False, nullable=False)
+    late_minutes = Column(Integer, default=0, nullable=False)  # Minutes late beyond grace
+    is_early_exit = Column(Boolean, default=False, nullable=False)
+    early_exit_minutes = Column(Integer, default=0, nullable=False)  # Minutes before expected end
+    
     # Admin controls
     is_auto_checkout = Column(Boolean, default=False, nullable=False)  # System auto-closed
     admin_notes = Column(String, nullable=True)  # Admin remarks

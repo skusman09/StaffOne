@@ -310,3 +310,58 @@ def approve_salary_record(
     db.commit()
     
     return {"message": "Salary record approved", "status": "approved"}
+
+
+@router.get("/admin/export/pdf")
+def export_payroll_pdf(
+    year: int = Query(..., ge=2020, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    current_user: User = Depends(get_current_admin_user),
+    db: Session = Depends(get_db)
+):
+    """Export payroll report as PDF. Admin only."""
+    from fastapi.responses import Response
+    from app.utils.pdf_generator import generate_payroll_pdf
+    
+    records = get_monthly_payroll(db, year, month)
+    
+    if not records:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"No payroll records found for {year}-{month:02d}. Generate payroll first."
+        )
+    
+    # Convert to dict format for PDF generator
+    records_data = []
+    for record in records:
+        user = record.user
+        records_data.append({
+            'user_full_name': user.full_name or user.username,
+            'days_worked': record.days_worked,
+            'total_hours_worked': record.total_hours_worked,
+            'overtime_hours': record.overtime_hours,
+            'base_salary': record.base_salary,
+            'overtime_pay': record.overtime_pay,
+            'deductions': record.deductions,
+            'absence_deductions': record.absence_deductions,
+            'net_salary': record.net_salary
+        })
+    
+    try:
+        pdf_bytes = generate_payroll_pdf(records_data, year, month)
+        
+        month_names = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December']
+        filename = f"Payroll_{month_names[month-1]}_{year}.pdf"
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except ImportError as e:
+        raise HTTPException(
+            status_code=500,
+            detail="PDF generation not available. Install reportlab: pip install reportlab"
+        )
+

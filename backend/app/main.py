@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from app.core.config import settings
-from app.routes import auth, attendance, admin, locations, leaves, notifications, analytics, reports, holidays, payroll
+from app.routes import auth, attendance, admin, locations, leaves, notifications, analytics, reports, holidays, payroll, config, audit, scheduler, department, compoff
 from app.database import Base, engine
 
 # Create database tables on startup (only if using SQLite or for development)
@@ -99,6 +99,11 @@ app.include_router(analytics.router)
 app.include_router(reports.router)
 app.include_router(holidays.router)
 app.include_router(payroll.router)
+app.include_router(config.router)
+app.include_router(audit.router)
+app.include_router(scheduler.router)
+app.include_router(department.router)
+app.include_router(compoff.router)
 
 
 @app.get("/")
@@ -107,7 +112,7 @@ def root():
     return {
         "message": "Check-In/Check-Out API",
         "version": "2.0.0",
-        "features": ["Timezone support", "Shift management", "Geofencing", "Working hours", "Admin controls", "Leave management"],
+        "features": ["Timezone support", "Shift management", "Geofencing", "Working hours", "Admin controls", "Leave management", "Background scheduler"],
         "docs": "/docs"
     }
 
@@ -115,5 +120,38 @@ def root():
 @app.get("/health")
 def health_check():
     """Health check endpoint."""
-    return {"status": "healthy"}
+    from app.core.scheduler import get_scheduler_status
+    scheduler_status = get_scheduler_status()
+    return {
+        "status": "healthy",
+        "scheduler": scheduler_status
+    }
 
+
+@app.on_event("startup")
+def startup_event():
+    """Initialize background scheduler on startup."""
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+    
+    try:
+        from app.core.scheduler import init_scheduler
+        init_scheduler()
+        logger.info("Background scheduler initialized successfully")
+    except Exception as e:
+        logger.warning(f"Could not initialize scheduler: {e}")
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    """Shutdown scheduler gracefully."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        from app.core.scheduler import shutdown_scheduler
+        shutdown_scheduler()
+        logger.info("Background scheduler shutdown complete")
+    except Exception as e:
+        logger.warning(f"Error shutting down scheduler: {e}")

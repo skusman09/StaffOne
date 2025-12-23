@@ -6,6 +6,40 @@ from app.models.user import User
 from app.schemas.notification import NotificationPreferencesUpdate
 from datetime import datetime
 from typing import List, Optional
+import smtplib
+import logging
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
+
+
+def send_email(to_email: str, subject: str, message: str) -> bool:
+    """Send an email using SMTP. Logs content if SMTP is not configured."""
+    if not settings.SMTP_HOST:
+        logger.info(f"[Email Sim] To: {to_email} | Subject: {subject} | Body: {message}")
+        return True
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL}>"
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(message, 'plain'))
+
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+            if settings.SMTP_TLS:
+                server.starttls()
+            if settings.SMTP_USER and settings.SMTP_PASSWORD:
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.send_message(msg)
+            
+        logger.info(f"[Email] Sent to {to_email}: {subject}")
+        return True
+    except Exception as e:
+        logger.error(f"[Email] Failed to send to {to_email}: {e}")
+        return False
 
 
 def get_or_create_preferences(db: Session, user_id: int) -> NotificationPreferences:
@@ -147,58 +181,114 @@ def delete_notification(db: Session, notification_id: int, user_id: int) -> bool
 
 # Notification creation helpers for common scenarios
 def notify_forgot_checkout(db: Session, user_id: int) -> Notification:
-    """Create forgot checkout notification."""
-    return create_notification(
+    """Create forgot checkout notification and send email."""
+    notif = create_notification(
         db, user_id,
         NotificationType.FORGOT_CHECKOUT,
         "⏰ Forgot to Check Out?",
         "You checked in today but haven't checked out yet. Don't forget!",
         "/dashboard"
     )
+    
+    # Send email if enabled
+    user = db.query(User).filter(User.id == user_id).first()
+    prefs = get_or_create_preferences(db, user_id)
+    if user and prefs.email_enabled and prefs.email_forgot_checkout:
+        send_email(
+            user.email,
+            notif.title,
+            notif.message
+        )
+    return notif
 
 
 def notify_forgot_checkin(db: Session, user_id: int) -> Notification:
-    """Create forgot checkin notification."""
-    return create_notification(
+    """Create forgot checkin notification and send email."""
+    notif = create_notification(
         db, user_id,
         NotificationType.FORGOT_CHECKIN,
         "📍 Haven't Checked In",
         "It's past your usual check-in time. Did you forget to check in?",
         "/dashboard"
     )
+    
+    # Send email if enabled
+    user = db.query(User).filter(User.id == user_id).first()
+    prefs = get_or_create_preferences(db, user_id)
+    if user and prefs.email_enabled and prefs.email_forgot_checkin:
+        send_email(
+            user.email,
+            notif.title,
+            notif.message
+        )
+    return notif
 
 
 def notify_leave_approved(db: Session, user_id: int, leave_dates: str) -> Notification:
-    """Create leave approved notification."""
-    return create_notification(
+    """Create leave approved notification and send email."""
+    notif = create_notification(
         db, user_id,
         NotificationType.LEAVE_APPROVED,
         "✅ Leave Approved",
         f"Your leave request for {leave_dates} has been approved!",
         "/leaves"
     )
+    
+    # Send email if enabled
+    user = db.query(User).filter(User.id == user_id).first()
+    prefs = get_or_create_preferences(db, user_id)
+    if user and prefs.email_enabled and prefs.email_leave_updates:
+        send_email(
+            user.email,
+            notif.title,
+            notif.message
+        )
+    return notif
 
 
 def notify_leave_rejected(db: Session, user_id: int, leave_dates: str, reason: str = "") -> Notification:
-    """Create leave rejected notification."""
+    """Create leave rejected notification and send email."""
     msg = f"Your leave request for {leave_dates} has been rejected."
     if reason:
         msg += f" Reason: {reason}"
-    return create_notification(
+        
+    notif = create_notification(
         db, user_id,
         NotificationType.LEAVE_REJECTED,
         "❌ Leave Rejected",
         msg,
         "/leaves"
     )
+    
+    # Send email if enabled
+    user = db.query(User).filter(User.id == user_id).first()
+    prefs = get_or_create_preferences(db, user_id)
+    if user and prefs.email_enabled and prefs.email_leave_updates:
+        send_email(
+            user.email,
+            notif.title,
+            notif.message
+        )
+    return notif
 
 
 def notify_auto_checkout(db: Session, user_id: int, checkout_time: str) -> Notification:
-    """Create auto-checkout notification."""
-    return create_notification(
+    """Create auto-checkout notification and send email."""
+    notif = create_notification(
         db, user_id,
         NotificationType.AUTO_CHECKOUT,
         "🤖 Auto Check-Out",
         f"You were automatically checked out at {checkout_time} due to inactivity.",
         "/history"
     )
+    
+    # Send email if enabled
+    user = db.query(User).filter(User.id == user_id).first()
+    prefs = get_or_create_preferences(db, user_id)
+    if user and prefs.email_enabled and prefs.email_forgot_checkout:
+        send_email(
+            user.email,
+            notif.title,
+            notif.message
+        )
+    return notif

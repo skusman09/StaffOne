@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { payrollAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 // Get default date range (start of month to today)
 const getDefaultDateRange = () => {
@@ -72,7 +73,7 @@ export default function MyReportPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+            <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="mb-6">
@@ -237,7 +238,7 @@ export default function MyReportPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </Container>
         </div>
     )
 }

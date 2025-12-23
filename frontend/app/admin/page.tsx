@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
-import { adminAPI, authAPI } from '@/lib/api'
+import { adminAPI, authAPI, departmentAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import { TableSkeleton } from '@/components/LoadingSkeleton'
 import { exportToCSV, formatDateForCSV } from '@/lib/export'
 import { toast } from '@/lib/toast'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 type RoleFilter = 'all' | 'admin' | 'employee'
 
@@ -16,11 +17,12 @@ export default function AdminPage() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
-  // Separate search states (prevents users search affecting attendance search)
+  // Separate search states
   const [userSearchTerm, setUserSearchTerm] = useState('')
   const [attendanceSearchTerm, setAttendanceSearchTerm] = useState('')
 
   const [filterRole, setFilterRole] = useState<RoleFilter>('all')
+  const [filterDept, setFilterDept] = useState<string>('all')
   const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
     start: '',
     end: '',
@@ -51,7 +53,7 @@ export default function AdminPage() {
 
   const isAdmin = authed && user?.role === 'admin'
 
-  // Load admin data (only if admin)
+  // Load admin data
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['adminUsers'],
     queryFn: () => adminAPI.getUsers(0, 100),
@@ -61,6 +63,12 @@ export default function AdminPage() {
   const { data: attendance, isLoading: attendanceLoading } = useQuery({
     queryKey: ['adminAttendance'],
     queryFn: () => adminAPI.getAttendance(0, 100),
+    enabled: isAdmin,
+  })
+
+  const { data: deptData } = useQuery({
+    queryKey: ['departments'],
+    queryFn: departmentAPI.getAll,
     enabled: isAdmin,
   })
 
@@ -84,9 +92,10 @@ export default function AdminPage() {
         String(u.full_name ?? '').toLowerCase().includes(q)
 
       const matchesRole = filterRole === 'all' || u.role === filterRole
-      return matchesSearch && matchesRole
+      const matchesDept = filterDept === 'all' || u.department_id?.toString() === filterDept
+      return matchesSearch && matchesRole && matchesDept
     })
-  }, [users, userSearchTerm, filterRole])
+  }, [users, userSearchTerm, filterRole, filterDept])
 
   const filteredAttendance = useMemo(() => {
     const list = Array.isArray(attendance) ? attendance : []
@@ -104,6 +113,9 @@ export default function AdminPage() {
       const email = String(record?.user?.email ?? '').toLowerCase()
 
       const matchesSearch = !q || username.includes(q) || email.includes(q)
+      const matchesDept = filterDept === 'all' || record.user?.department_id?.toString() === filterDept
+
+      if (!matchesDept) return false
 
       // Improved: supports start-only or end-only filtering too
       const checkInDate = new Date(record.check_in_time)
@@ -112,7 +124,7 @@ export default function AdminPage() {
 
       return matchesSearch
     })
-  }, [attendance, attendanceSearchTerm, dateRange.start, dateRange.end])
+  }, [attendance, attendanceSearchTerm, dateRange.start, dateRange.end, filterDept])
 
   // Stats
   const todaysCheckins = useMemo(() => {
@@ -131,11 +143,11 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
-        <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+        <Container className="py-6">
           <div className="px-4 py-6 sm:px-0">
             <TableSkeleton rows={5} />
           </div>
-        </div>
+        </Container>
       </div>
     )
   }
@@ -199,11 +211,12 @@ export default function AdminPage() {
     }
   }
 
+
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-
-      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+      <Container className="py-6">
         <div className="sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Admin Dashboard</h1>
 
@@ -356,6 +369,20 @@ export default function AdminPage() {
                   <option value="employee">Employee</option>
                 </select>
 
+                <select
+                  value={filterDept}
+                  onChange={(e) => {
+                    setFilterDept(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                >
+                  <option value="all">All Departments</option>
+                  {deptData?.departments?.map((d: any) => (
+                    <option key={d.id} value={d.id}>{d.name}</option>
+                  ))}
+                </select>
+
                 <button
                   onClick={handleExportUsers}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
@@ -383,18 +410,26 @@ export default function AdminPage() {
                       <li key={u.id}>
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{u.username}</p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">{u.email}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{u.email}</p>
                               {u.full_name && <p className="text-sm text-gray-500 dark:text-gray-400">{u.full_name}</p>}
                             </div>
 
-                            <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                                }`}
-                            >
-                              {u.role}
-                            </span>
+                            <div className="flex items-center gap-4">
+                              {u.department_id && (
+                                <span className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded text-xs font-medium">
+                                  {deptData?.departments?.find((d: any) => d.id === u.department_id)?.name || 'Dept'}
+                                </span>
+                              )}
+
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                                  }`}
+                              >
+                                {u.role}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </li>
@@ -600,7 +635,7 @@ export default function AdminPage() {
             )}
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

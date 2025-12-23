@@ -10,6 +10,7 @@ import { toast } from '@/lib/toast'
 import { DashboardSkeleton } from '@/components/LoadingSkeleton'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
+import Container from '@/components/Container'
 
 // Shift type constants
 const SHIFT_TYPES = {
@@ -205,11 +206,11 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
-        <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+        <Container className="py-6">
           <div className="px-4 py-6 sm:px-0">
             <DashboardSkeleton />
           </div>
-        </div>
+        </Container>
       </div>
     )
   }
@@ -217,7 +218,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+      <Container className="py-6">
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Dashboard</h1>
 
@@ -482,7 +483,7 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

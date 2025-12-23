@@ -1,5 +1,7 @@
+import os
 from pydantic_settings import BaseSettings
-from typing import Optional
+import secrets
+from typing import Optional, List
 
 
 class Settings(BaseSettings):
@@ -13,7 +15,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # CORS (comma-separated string from env, converted to list)
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001"
+    CORS_ORIGINS: str = "*"
     
     # Timezone & Working Hours Settings
     DEFAULT_TIMEZONE: str = "Asia/Kolkata"  # Default timezone for new users
@@ -30,6 +32,15 @@ class Settings(BaseSettings):
     OVERTIME_MULTIPLIER: float = 1.5  # Overtime pay multiplier
     DEDUCTION_RATE: float = 1.0  # Undertime deduction rate (1x hourly rate)
     WEEKEND_DAYS: str = "5,6"  # Saturday=5, Sunday=6 (comma-separated)
+    
+    # SMTP Settings
+    SMTP_HOST: Optional[str] = os.getenv("SMTP_HOST")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
+    SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
+    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@hrms.com")
+    SMTP_FROM_NAME: str = "HRMS System"
+    SMTP_TLS: bool = os.getenv("SMTP_TLS", "True").lower() == "true"
     
     @property
     def weekend_days_list(self) -> list[int]:

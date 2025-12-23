@@ -251,6 +251,22 @@ export const reportsAPI = {
     const response = await api.get(url)
     return response.data
   },
+  exportExcel: async (userId?: number, startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams()
+    if (userId) params.append('user_id', userId.toString())
+    if (startDate) params.append('start_date', startDate)
+    if (endDate) params.append('end_date', endDate)
+    const response = await api.get(`/reports/export/excel?${params.toString()}`, {
+      responseType: 'blob',
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `attendance_report_${startDate || 'start'}_to_${endDate || 'end'}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  },
 }
 
 // Holiday API
@@ -275,6 +291,28 @@ export const holidayAPI = {
 }
 
 // Payroll API
+export const departmentAPI = {
+  getAll: async () => {
+    const response = await api.get('/departments/')
+    return response.data
+  },
+  get: async (id: number) => {
+    const response = await api.get(`/departments/${id}`)
+    return response.data
+  },
+  create: async (data: { name: string; description?: string; manager_id?: number }) => {
+    const response = await api.post('/departments/', data)
+    return response.data
+  },
+  update: async (id: number, data: { name?: string; description?: string; manager_id?: number }) => {
+    const response = await api.put(`/departments/${id}`, data)
+    return response.data
+  },
+  delete: async (id: number) => {
+    await api.delete(`/departments/${id}`)
+  },
+}
+
 export const payrollAPI = {
   // User endpoints
   getMyAttendance: async (startDate: string, endDate: string) => {
@@ -312,6 +350,23 @@ export const payrollAPI = {
   approveSalary: async (recordId: number) => {
     const response = await api.patch(`/payroll/admin/salary/${recordId}/approve`)
     return response.data
+  },
+  exportPdf: async (year: number, month: number) => {
+    const response = await api.get(`/payroll/admin/export/pdf?year=${year}&month=${month}`, {
+      responseType: 'blob'
+    })
+    // Create download link
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December']
+    link.download = `Payroll_${monthNames[month - 1]}_${year}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
   },
 }
 
@@ -437,6 +492,62 @@ export const notificationsAPI = {
   },
   delete: async (id: number) => {
     const response = await api.delete(`/notifications/${id}`)
+    return response.data
+  },
+}
+
+// System Config API (Rules Engine)
+export const configAPI = {
+  getAll: async () => {
+    const response = await api.get('/config/')
+    return response.data
+  },
+  get: async (key: string) => {
+    const response = await api.get(`/config/${key}`)
+    return response.data
+  },
+  update: async (key: string, data: { value: string; description?: string }) => {
+    const response = await api.put(`/config/${key}`, data)
+    return response.data
+  },
+  create: async (data: { key: string; value: string; description?: string; value_type?: string }) => {
+    const response = await api.post('/config/', data)
+    return response.data
+  },
+  delete: async (key: string) => {
+    await api.delete(`/config/${key}`)
+  },
+  seed: async () => {
+    const response = await api.post('/config/seed')
+    return response.data
+  },
+}
+
+// Comp-off API
+export const compoffAPI = {
+  request: async (data: { ot_start_date: string; ot_end_date: string; reason?: string }) => {
+    const response = await api.post('/compoff/request', data)
+    return response.data
+  },
+  getMyRequests: async (status?: string) => {
+    let url = '/compoff/my-requests'
+    if (status) url += `?status=${status}`
+    const response = await api.get(url)
+    return response.data
+  },
+  getAll: async (status?: string, userId?: number) => {
+    const params = new URLSearchParams()
+    if (status) params.append('status', status)
+    if (userId) params.append('user_id', userId.toString())
+    const response = await api.get(`/compoff/admin/all?${params.toString()}`)
+    return response.data
+  },
+  review: async (id: number, data: { status: string; admin_remarks?: string }) => {
+    const response = await api.patch(`/compoff/${id}/review`, data)
+    return response.data
+  },
+  getBalance: async () => {
+    const response = await api.get('/compoff/balance')
     return response.data
   },
 }

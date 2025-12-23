@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Float, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -25,11 +25,12 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     timezone = Column(String, default=settings.DEFAULT_TIMEZONE, nullable=False)  # User's timezone
     monthly_base_salary = Column(Float, nullable=True)  # Default monthly salary
+    department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationship with check-in/out records
-    # Relationship with check-in/out records
+    # Relationships
+    department = relationship("Department", foreign_keys=[department_id], back_populates="users")
     checkinouts = relationship("CheckInOut", back_populates="user", cascade="all, delete-orphan", foreign_keys="[CheckInOut.user_id]")
 
 

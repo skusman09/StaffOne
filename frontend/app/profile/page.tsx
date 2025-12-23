@@ -9,6 +9,7 @@ import { toast } from '@/lib/toast'
 import { validateEmail, validatePassword } from '@/lib/validation'
 import { DashboardSkeleton } from '@/components/LoadingSkeleton'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -157,7 +158,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+      <Container className="py-6">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-6">Profile Settings</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -380,8 +381,7 @@ export default function ProfilePage() {
             </form>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }
-

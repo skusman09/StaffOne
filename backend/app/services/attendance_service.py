@@ -93,6 +93,23 @@ def check_in_user(
             detail="You have an active shift. Please check out first."
         )
     
+    # Late arrival detection
+    is_late = False
+    late_mins = 0
+    user_tz = get_user_timezone(user)
+    utc_now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+    user_now = utc_now.astimezone(user_tz)
+    
+    # Expected start time (configurable, default 9:00 AM) + grace period (default 15 min)
+    expected_hour = 9  # Can be made configurable via SystemConfig
+    grace_minutes = 15  # Can be made configurable via SystemConfig
+    expected_start = user_now.replace(hour=expected_hour, minute=0, second=0, microsecond=0)
+    grace_deadline = expected_start + timedelta(minutes=grace_minutes)
+    
+    if user_now > grace_deadline:
+        is_late = True
+        late_mins = int((user_now - grace_deadline).total_seconds() / 60)
+    
     # Create check-in record
     shift_id = str(uuid.uuid4())
     checkinout = CheckInOut(
@@ -104,7 +121,9 @@ def check_in_user(
         longitude=check_in_data.longitude,
         device_info=check_in_data.device_info,
         is_location_valid=True,  # Will be updated by geofencing service if enabled
-        is_auto_checkout=False
+        is_auto_checkout=False,
+        is_late_arrival=is_late,
+        late_minutes=late_mins
     )
     
     db.add(checkinout)
@@ -142,6 +161,19 @@ def check_out_user(
         active_shift.check_in_time, 
         checkout_time
     )
+    
+    # Early exit detection
+    user_tz = get_user_timezone(user)
+    utc_now = checkout_time.replace(tzinfo=pytz.UTC)
+    user_now = utc_now.astimezone(user_tz)
+    
+    # Expected end time (configurable, default 6:00 PM)
+    expected_end_hour = 18  # Can be made configurable via SystemConfig
+    expected_end = user_now.replace(hour=expected_end_hour, minute=0, second=0, microsecond=0)
+    
+    if user_now < expected_end:
+        active_shift.is_early_exit = True
+        active_shift.early_exit_minutes = int((expected_end - user_now).total_seconds() / 60)
     
     db.commit()
     db.refresh(active_shift)

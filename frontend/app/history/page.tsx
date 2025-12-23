@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { attendanceAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 export default function HistoryPage() {
   const router = useRouter()
@@ -70,11 +71,11 @@ export default function HistoryPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Navbar />
-        <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+        <Container className="py-6">
           <div className="px-4 py-6 sm:px-0">
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
           </div>
-        </div>
+        </Container>
       </div>
     )
   }
@@ -82,7 +83,7 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+      <Container className="py-6">
         <div className="px-4 py-6 sm:px-0">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Attendance History</h1>
 
@@ -298,8 +299,7 @@ export default function HistoryPage() {
             </div>
           )}
         </div>
-      </div>
+      </Container>
     </div>
   )
 }
-

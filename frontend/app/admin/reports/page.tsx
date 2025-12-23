@@ -244,8 +244,17 @@ export default function AdminReportsPage() {
 
                     {/* Results Table */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">📋 Attendance Summary</h2>
+                            <button
+                                onClick={() => reportsAPI.exportExcel(selectedUserId || undefined, startDate, endDate)}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Export Excel
+                            </button>
                         </div>
 
                         {reportLoading ? (
@@ -343,6 +352,6 @@ export default function AdminReportsPage() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query'
 import { analyticsAPI, authAPI, adminAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 // Simple bar chart component (no external dependencies)
 function SimpleBarChart({ data, dataKey, labelKey, color = '#6366f1' }: {
@@ -91,7 +92,7 @@ export default function AnalyticsPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+            <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📊 Analytics</h1>
@@ -333,7 +334,7 @@ export default function AnalyticsPage() {
                         <div className="text-center py-12 text-gray-500">Loading analytics...</div>
                     )}
                 </div>
-            </div>
+            </Container>
         </div>
     )
 }

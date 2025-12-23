@@ -7,6 +7,7 @@ import { leaveAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import { toast } from '@/lib/toast'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 const LEAVE_TYPES = [
     { value: 'annual', label: '🏖️ Annual Leave' },
@@ -35,7 +36,7 @@ export default function LeavesPage() {
         leave_type: 'annual',
         start_date: '',
         end_date: '',
-        reason: '',
+        reason: ''
     })
 
     useEffect(() => {
@@ -103,11 +104,11 @@ export default function LeavesPage() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <Navbar />
-                <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+                <Container className="py-6">
                     <div className="px-4 py-6 sm:px-0">
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading...</div>
                     </div>
-                </div>
+                </Container>
             </div>
         )
     }
@@ -115,7 +116,7 @@ export default function LeavesPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+            <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Leave Management</h1>
@@ -262,7 +263,7 @@ export default function LeavesPage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </Container>
         </div>
     )
 }
