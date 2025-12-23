@@ -232,9 +232,17 @@ export default function PayrollPage() {
                                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                         {payrollData.records.map((record: any) => (
                                             <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                                <td className="px-4 py-3">
-                                                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{record.user_full_name}</div>
-                                                    <div className="text-xs text-gray-500">{record.user_email}</div>
+                                                <td className="px-4 py-3 whitespace-nowrap">
+                                                    <div className="flex items-center">
+                                                        <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3">
+                                                            {(record.user_full_name || record.user_email).charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                {record.user_email.split('@')[0]}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td className="px-4 py-3 text-right text-sm">
                                                     <span className="text-gray-900 dark:text-gray-100">{record.days_worked}</span>

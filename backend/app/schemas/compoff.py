@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
+from app.schemas.auth import UserResponse
 
 
 class CompOffStatusEnum(str, Enum):
@@ -29,6 +30,7 @@ class CompOffResponse(BaseModel):
     reason: Optional[str] = None
     admin_remarks: Optional[str] = None
     review_date: Optional[datetime] = None
+    user: Optional[UserResponse] = None
 
     class Config:
         from_attributes = True

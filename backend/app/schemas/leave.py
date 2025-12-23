@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, field_validator
 from datetime import date, datetime
 from typing import Optional
 from app.models.leave import LeaveType, LeaveStatus
+from app.schemas.auth import UserResponse
 
 
 class LeaveCreate(BaseModel):
@@ -37,6 +38,7 @@ class LeaveResponse(BaseModel):
     admin_remarks: Optional[str]
     approved_by_id: Optional[int]
     approved_at: Optional[datetime]
+    user: Optional[UserResponse] = None
     created_at: datetime
     updated_at: datetime
 

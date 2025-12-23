@@ -108,7 +108,23 @@ export default function AdminCompOffPage() {
                             ) : (
                                 requests?.comp_offs?.map((req: any) => (
                                     <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{getUserName(req.user_id)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            {(() => {
+                                                const u = usersData?.find((u: any) => u.id === req.user_id);
+                                                return (
+                                                    <div className="flex items-center">
+                                                        <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3">
+                                                            {(u?.full_name || u?.username || 'U').charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                {u?.username || `User #${req.user_id}`}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </td>
                                         <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                             {new Date(req.ot_start_date).toLocaleDateString()} - {new Date(req.ot_end_date).toLocaleDateString()}
                                         </td>

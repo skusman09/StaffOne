@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, and_
 from datetime import datetime
 from typing import Optional
@@ -88,7 +88,7 @@ def get_all_compoff_requests(
     db: Session = Depends(get_db)
 ):
     """Get all comp-off requests. Admin only."""
-    query = db.query(CompOff)
+    query = db.query(CompOff).options(joinedload(CompOff.user))
     
     if status:
         query = query.filter(CompOff.status == status)

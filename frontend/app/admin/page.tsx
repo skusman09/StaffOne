@@ -10,6 +10,7 @@ import { exportToCSV, formatDateForCSV } from '@/lib/export'
 import { toast } from '@/lib/toast'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import Link from 'next/link'
 
 type RoleFilter = 'all' | 'admin' | 'employee'
 
@@ -221,7 +222,7 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Admin Dashboard</h1>
 
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 mb-8">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 mb-8">
             <div className="card">
               <div className="p-5">
                 <div className="flex items-center">
@@ -337,6 +338,34 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
+
+            <Link href="/admin/leaves" className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg
+                      className="h-6 w-6 text-orange-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Leave Requests</dt>
+                      <dd className="text-lg font-semibold text-orange-600 dark:text-orange-400">View All</dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+            </Link>
           </div>
 
           {/* Users Section */}
@@ -410,10 +439,16 @@ export default function AdminPage() {
                       <li key={u.id}>
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{u.username}</p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{u.email}</p>
-                              {u.full_name && <p className="text-sm text-gray-500 dark:text-gray-400">{u.full_name}</p>}
+                            <div className="flex items-center flex-1 min-w-0">
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold mr-4 shadow-sm">
+                                {(u.full_name || u.username).charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {u.username}
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{u.email}</p>
+                              </div>
                             </div>
 
                             <div className="flex items-center gap-4">
@@ -562,31 +597,36 @@ export default function AdminPage() {
                       <li key={record.id}>
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                {record.user.username} ({record.user.email})
-                              </p>
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3">
+                                {(record.user.full_name || record.user.username).charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {record.user.username}
+                                </div>
+                              </div>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                              Check-in: {new Date(record.check_in_time).toLocaleString()}
+                            </p>
+                            {record.check_out_time && (
                               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Check-in: {new Date(record.check_in_time).toLocaleString()}
+                                Check-out: {new Date(record.check_out_time).toLocaleString()}
                               </p>
-                              {record.check_out_time && (
-                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                  Check-out: {new Date(record.check_out_time).toLocaleString()}
-                                </p>
-                              )}
-                            </div>
+                            )}
+                          </div>
 
-                            <div className="ml-4">
-                              {record.check_out_time ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                  Complete
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                  Pending
-                                </span>
-                              )}
-                            </div>
+                          <div className="ml-4">
+                            {record.check_out_time ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Complete
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Pending
+                              </span>
+                            )}
                           </div>
                         </div>
                       </li>
@@ -635,7 +675,7 @@ export default function AdminPage() {
             )}
           </div>
         </div>
-      </Container>
-    </div>
+      </Container >
+    </div >
   )
 }

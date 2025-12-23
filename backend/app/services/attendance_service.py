@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from app.models.checkinout import CheckInOut, ShiftType
 from app.models.user import User
@@ -280,7 +280,7 @@ def get_all_attendance(
     pending_only: bool = False
 ) -> list[CheckInOut]:
     """Get all attendance records (admin only)."""
-    query = db.query(CheckInOut)
+    query = db.query(CheckInOut).options(joinedload(CheckInOut.user))
     
     if user_id:
         query = query.filter(CheckInOut.user_id == user_id)

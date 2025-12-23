@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, status
 from app.models.leave import Leave, LeaveType, LeaveStatus
 from app.models.user import User
@@ -66,7 +66,7 @@ def get_all_leaves(
     user_id: Optional[int] = None
 ) -> List[Leave]:
     """Get all leave requests (admin only)."""
-    query = db.query(Leave)
+    query = db.query(Leave).options(joinedload(Leave.user))
     
     if status_filter:
         query = query.filter(Leave.status == status_filter)

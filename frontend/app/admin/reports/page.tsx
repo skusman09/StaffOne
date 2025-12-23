@@ -308,7 +308,7 @@ export default function AdminReportsPage() {
                                                         </div>
                                                         <div className="ml-4">
                                                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                {summary.user_full_name}
+                                                                {summary.user_email.split('@')[0]}
                                                             </div>
                                                             <div className="text-sm text-gray-500 dark:text-gray-400">
                                                                 {summary.user_email}
