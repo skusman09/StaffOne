@@ -81,7 +81,7 @@ def create_tokens_for_user(user: User) -> dict:
 
 
 def update_user_profile(db: Session, user: User, email: str = None, username: str = None, 
-                        full_name: str = None, timezone: str = None) -> User:
+                        full_name: str = None, timezone: str = None, avatar_url: str = None) -> User:
     """Update user profile information."""
     # Check if new email is already taken
     if email and email != user.email:
@@ -108,6 +108,9 @@ def update_user_profile(db: Session, user: User, email: str = None, username: st
     
     if timezone is not None:
         user.timezone = timezone
+    
+    if avatar_url is not None:
+        user.avatar_url = avatar_url
     
     db.commit()
     db.refresh(user)

@@ -7,6 +7,7 @@ import { reportsAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { BarChart3, Filter, FileSpreadsheet, Users, Clock, Zap, SearchX, Loader2 } from 'lucide-react'
 
 interface UserSummary {
     user_id: number
@@ -142,7 +143,10 @@ export default function AdminReportsPage() {
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📊 Admin Attendance Reports</h1>
+                        <div className="flex items-center gap-3">
+                            <BarChart3 className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Admin Attendance Reports</h1>
+                        </div>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             View aggregate attendance statistics for employees
                         </p>
@@ -150,7 +154,10 @@ export default function AdminReportsPage() {
 
                     {/* Filters Card */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">🔍 Filters</h2>
+                        <div className="flex items-center gap-2 mb-4">
+                            <Filter className="w-5 h-5 text-indigo-500" />
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Filters</h2>
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             {/* User Dropdown */}
                             <div>
@@ -224,17 +231,20 @@ export default function AdminReportsPage() {
                     {/* Summary Stats */}
                     {reportData && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
+                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
+                                <Users className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-indigo-100 text-sm">Total Employees</p>
                                 <p className="text-4xl font-bold">{reportData.total_users}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-lg">
+                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
+                                <Clock className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-green-100 text-sm">Total Hours Worked</p>
                                 <p className="text-4xl font-bold">
                                     {summariesArray.reduce((sum, s) => sum + s.total_hours, 0).toFixed(1)}h
                                 </p>
                             </div>
-                            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-6 shadow-lg">
+                            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
+                                <Zap className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-orange-100 text-sm">Total Overtime Hours</p>
                                 <p className="text-4xl font-bold">
                                     {summariesArray.reduce((sum, s) => sum + s.overtime_hours, 0).toFixed(1)}h
@@ -251,9 +261,7 @@ export default function AdminReportsPage() {
                                 onClick={() => reportsAPI.exportExcel(selectedUserId || undefined, startDate, endDate)}
                                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                                <FileSpreadsheet className="w-4 h-4" />
                                 Export Excel
                             </button>
                         </div>
@@ -268,9 +276,7 @@ export default function AdminReportsPage() {
                             </div>
                         ) : summariesArray.length === 0 ? (
                             <div className="p-12 text-center">
-                                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
+                                <SearchX className="mx-auto h-12 w-12 text-gray-400" />
                                 <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No records found</h3>
                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                     No attendance data found for the selected filters.

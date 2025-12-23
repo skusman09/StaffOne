@@ -7,6 +7,18 @@ import { analyticsAPI, authAPI, adminAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import {
+    BarChart3,
+    Users,
+    CalendarOff,
+    TrendingUp,
+    Trophy,
+    Calendar,
+    Clock,
+    Zap,
+    AlertCircle,
+    Loader2
+} from 'lucide-react'
 
 // Simple bar chart component (no external dependencies)
 function SimpleBarChart({ data, dataKey, labelKey, color = '#6366f1' }: {
@@ -95,7 +107,10 @@ export default function AnalyticsPage() {
             <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📊 Analytics</h1>
+                        <div className="flex items-center gap-3">
+                            <BarChart3 className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Analytics</h1>
+                        </div>
                         <select
                             value={days}
                             onChange={(e) => setDays(Number(e.target.value))}
@@ -174,7 +189,10 @@ export default function AnalyticsPage() {
                             {/* Employee Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">👥 Employees</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-indigo-500" />
+                                        <span>Employees</span>
+                                    </h3>
                                     <div className="flex items-center gap-8">
                                         <div>
                                             <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{dashboard.total_employees}</p>
@@ -188,7 +206,10 @@ export default function AnalyticsPage() {
                                 </div>
 
                                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">🏖️ Leave Breakdown</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                        <CalendarOff className="w-5 h-5 text-orange-500" />
+                                        <span>Leave Breakdown</span>
+                                    </h3>
                                     {dashboard.leave_breakdown && dashboard.leave_breakdown.length > 0 ? (
                                         <div className="space-y-2">
                                             {dashboard.leave_breakdown.map((item: any) => (
@@ -207,7 +228,10 @@ export default function AnalyticsPage() {
                             {/* Attendance Trends */}
                             {dashboard.daily_stats && dashboard.daily_stats.length > 0 && (
                                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-8">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">📈 Attendance Trends</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                        <TrendingUp className="w-5 h-5 text-green-500" />
+                                        <span>Attendance Trends</span>
+                                    </h3>
                                     <SimpleBarChart data={dashboard.daily_stats} dataKey="total_checkins" labelKey="date" color="#10b981" />
                                 </div>
                             )}
@@ -215,7 +239,10 @@ export default function AnalyticsPage() {
                             {/* Top Performers */}
                             {dashboard.top_performers && dashboard.top_performers.length > 0 && (
                                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">🏆 Top Performers</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                                        <Trophy className="w-5 h-5 text-yellow-500" />
+                                        <span>Top Performers</span>
+                                    </h3>
                                     <div className="overflow-x-auto">
                                         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                             <thead>

@@ -7,6 +7,8 @@ import { compoffAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { getFullAvatarUrl } from '@/lib/utils'
+import { Palmtree, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
 export default function AdminCompOffPage() {
     const router = useRouter()
@@ -83,7 +85,10 @@ export default function AdminCompOffPage() {
 
             <Container className="py-6">
                 <div className="mb-6">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🏖️ Manage Comp-off Requests</h1>
+                    <div className="flex items-center gap-3">
+                        <Palmtree className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Manage Comp-off Requests</h1>
+                    </div>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Review and approve employee comp-off conversion requests</p>
                 </div>
 
@@ -102,9 +107,21 @@ export default function AdminCompOffPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
-                                <tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">Loading...</td></tr>
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-600" />
+                                        <p>Loading requests...</p>
+                                    </td>
+                                </tr>
                             ) : requests?.comp_offs?.length === 0 ? (
-                                <tr><td colSpan={6} className="px-6 py-4 text-center text-gray-500">No requests found</td></tr>
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                                        <div className="flex flex-col items-center">
+                                            <Palmtree className="w-12 h-12 text-gray-300 mb-2" />
+                                            <p>No requests found</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             ) : (
                                 requests?.comp_offs?.map((req: any) => (
                                     <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
@@ -113,8 +130,16 @@ export default function AdminCompOffPage() {
                                                 const u = usersData?.find((u: any) => u.id === req.user_id);
                                                 return (
                                                     <div className="flex items-center">
-                                                        <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3">
-                                                            {(u?.full_name || u?.username || 'U').charAt(0).toUpperCase()}
+                                                        <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3 overflow-hidden">
+                                                            {u?.avatar_url ? (
+                                                                <img
+                                                                    src={getFullAvatarUrl(u.avatar_url) || undefined}
+                                                                    alt={u?.username || 'User'}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                (u?.full_name || u?.username || 'U').charAt(0).toUpperCase()
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">

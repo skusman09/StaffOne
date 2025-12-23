@@ -27,6 +27,7 @@ class UserResponse(BaseModel):
     role: Role
     is_active: bool
     timezone: str
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:
@@ -57,6 +58,7 @@ class ProfileUpdate(BaseModel):
     username: Optional[str] = None
     full_name: Optional[str] = None
     timezone: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 
 class PasswordChange(BaseModel):

@@ -7,6 +7,7 @@ export interface SessionData {
     email: string
     role: string
     full_name?: string
+    avatar_url?: string
   } | null
   token: string | null
   expiresAt: number | null

@@ -8,6 +8,7 @@ import { SessionManager } from '@/lib/session'
 import { toast } from '@/lib/toast'
 import { validateUsername } from '@/lib/validation'
 import Link from 'next/link'
+import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -24,24 +25,24 @@ export default function LoginPage() {
       if (data.access_token) {
         // Clear cached queries (session already cleared by login API)
         queryClient.clear() // Clear all cached queries
-        
+
         // Wait a bit to ensure cookies are set
         await new Promise(resolve => setTimeout(resolve, 200))
-        
+
         // Verify token is available
         const token = Cookies.get('access_token')
         if (!token) {
           toast.error('Failed to store authentication token. Please try again.')
           return
         }
-        
+
         toast.success('Login successful!')
-        
+
         // Invalidate user query to fetch fresh data
         queryClient.invalidateQueries({ queryKey: ['user'] })
         queryClient.invalidateQueries({ queryKey: ['todayStatus'] })
         queryClient.invalidateQueries({ queryKey: ['history'] })
-        
+
         // Redirect to dashboard - queries will fetch fresh data there
         router.push('/dashboard')
       } else {
@@ -50,9 +51,9 @@ export default function LoginPage() {
     },
     onError: (err: any) => {
       console.error('Login error:', err)
-      const errorMessage = err.response?.data?.detail || 
-                          err.message || 
-                          'Unable to connect to server. Please make sure the backend is running.'
+      const errorMessage = err.response?.data?.detail ||
+        err.message ||
+        'Unable to connect to server. Please make sure the backend is running.'
       toast.error(errorMessage)
     },
   })
@@ -60,34 +61,34 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
-    
+
     // Validate inputs
     const usernameValidation = validateUsername(username)
     if (!usernameValidation.isValid) {
       setErrors({ username: usernameValidation.errors[0] })
       return
     }
-    
+
     if (!password) {
       setErrors({ password: 'Password is required' })
       return
     }
-    
+
     // Clear any old session data before logging in
     const { SessionManager } = await import('@/lib/session')
     SessionManager.clearSession()
     queryClient.clear() // Clear all cached queries
-    
+
     loginMutation.mutate({ username, password })
   }
-  
+
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value)
     if (errors.username) {
       setErrors({ ...errors, username: undefined })
     }
   }
-  
+
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value)
     if (errors.password) {
@@ -103,9 +104,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
+              <User className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
               Welcome Back
@@ -125,18 +124,15 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+                  <User className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   id="username"
                   name="username"
                   type="text"
                   required
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base ${
-                    errors.username ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base ${errors.username ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
                   placeholder="Enter your username"
                   value={username}
                   onChange={handleUsernameChange}
@@ -158,18 +154,15 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+                  <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base ${
-                    errors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base ${errors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
                   placeholder="Enter your password"
                   value={password}
                   onChange={handlePasswordChange}
@@ -210,10 +203,7 @@ export default function LoginPage() {
               >
                 {loginMutation.isPending ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
                     Signing in...
                   </>
                 ) : (

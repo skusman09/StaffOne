@@ -7,6 +7,17 @@ import { payrollAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import {
+    FileText,
+    Calendar,
+    ClipboardList,
+    CalendarDays,
+    Clock,
+    Zap,
+    AlertCircle,
+    Loader2,
+    RotateCcw
+} from 'lucide-react'
 
 // Get default date range (start of month to today)
 const getDefaultDateRange = () => {
@@ -77,7 +88,10 @@ export default function MyReportPage() {
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📊 My Attendance Report</h1>
+                        <div className="flex items-center gap-3">
+                            <FileText className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Attendance Report</h1>
+                        </div>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             View your attendance metrics and hours breakdown
                         </p>
@@ -85,7 +99,10 @@ export default function MyReportPage() {
 
                     {/* Date Range Filter */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">📅 Select Period</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+                            <Calendar className="w-5 h-5 text-indigo-500" />
+                            <span>Select Period</span>
+                        </h2>
                         <div className="flex flex-wrap gap-4 items-end">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -115,8 +132,9 @@ export default function MyReportPage() {
                                     setStartDate(defaults.start)
                                     setEndDate(defaults.end)
                                 }}
-                                className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors"
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                             >
+                                <RotateCcw className="w-4 h-4" />
                                 Reset to This Month
                             </button>
                         </div>
@@ -153,8 +171,9 @@ export default function MyReportPage() {
                             {/* Detailed Metrics */}
                             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
                                 <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                        📋 Detailed Metrics
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                        <ClipboardList className="w-5 h-5 text-indigo-500" />
+                                        <span>Detailed Metrics</span>
                                         <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">
                                             ({formatDate(report.period_start)} - {formatDate(report.period_end)})
                                         </span>
@@ -164,7 +183,10 @@ export default function MyReportPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                         {/* Working Days */}
                                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">📆 Working Days</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                                                <CalendarDays className="w-4 h-4 text-indigo-400" />
+                                                <span>Working Days</span>
+                                            </h3>
                                             <div className="space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600 dark:text-gray-300">Office Working Days</span>
@@ -183,7 +205,10 @@ export default function MyReportPage() {
 
                                         {/* Hours */}
                                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">⏱️ Hours</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                                                <Clock className="w-4 h-4 text-blue-400" />
+                                                <span>Hours</span>
+                                            </h3>
                                             <div className="space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600 dark:text-gray-300">Total Worked</span>
@@ -202,7 +227,10 @@ export default function MyReportPage() {
 
                                         {/* Overtime */}
                                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">⚡ Overtime</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                                                <Zap className="w-4 h-4 text-orange-400" />
+                                                <span>Overtime</span>
+                                            </h3>
                                             <div className="space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600 dark:text-gray-300">Overtime Days</span>
@@ -217,7 +245,10 @@ export default function MyReportPage() {
 
                                         {/* Undertime */}
                                         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">⚠️ Undertime</h3>
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                                                <AlertCircle className="w-4 h-4 text-red-400" />
+                                                <span>Undertime</span>
+                                            </h3>
                                             <div className="space-y-2">
                                                 <div className="flex justify-between">
                                                     <span className="text-gray-600 dark:text-gray-300">Undertime Hours</span>

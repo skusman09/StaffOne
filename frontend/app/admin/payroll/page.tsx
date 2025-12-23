@@ -7,6 +7,7 @@ import { payrollAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { Banknote, RefreshCcw, FileText, Users, Wallet, TrendingUp, Landmark, ClipboardList, CheckCircle2, CreditCard, Loader2 } from 'lucide-react'
 
 const MONTH_NAMES = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -97,7 +98,10 @@ export default function PayrollPage() {
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">💰 Payroll Management</h1>
+                        <div className="flex items-center gap-3">
+                            <Banknote className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Payroll Management</h1>
+                        </div>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Generate and manage monthly salary records
                         </p>
@@ -146,17 +150,23 @@ export default function PayrollPage() {
                             <button
                                 onClick={() => generateMutation.mutate()}
                                 disabled={generateMutation.isPending}
-                                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors"
+                                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                             >
-                                {generateMutation.isPending ? 'Generating...' : '🔄 Generate Payroll'}
+                                {generateMutation.isPending ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <RefreshCcw className="w-4 h-4" />
+                                )}
+                                {generateMutation.isPending ? 'Generating...' : 'Generate Payroll'}
                             </button>
                             {payrollData && (
                                 <button
                                     onClick={() => exportPdfMutation.mutate()}
                                     disabled={exportPdfMutation.isPending}
-                                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors"
+                                    className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                                 >
-                                    {exportPdfMutation.isPending ? 'Exporting...' : '📄 Export PDF'}
+                                    <FileText className="w-4 h-4" />
+                                    {exportPdfMutation.isPending ? 'Exporting...' : 'Export PDF'}
                                 </button>
                             )}
                         </div>
@@ -174,19 +184,23 @@ export default function PayrollPage() {
                     {/* Summary Cards */}
                     {payrollData && (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-5 shadow-lg">
+                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
+                                <Users className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-blue-100 text-sm">Total Employees</p>
                                 <p className="text-3xl font-bold">{payrollData.total_employees}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-5 shadow-lg">
+                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
+                                <Wallet className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-green-100 text-sm">Total Base Salary</p>
                                 <p className="text-3xl font-bold">₹{payrollData.total_base_salary.toLocaleString()}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-5 shadow-lg">
+                            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
+                                <TrendingUp className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-orange-100 text-sm">Total Overtime Pay</p>
                                 <p className="text-3xl font-bold">+₹{payrollData.total_overtime_pay.toLocaleString()}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-xl p-5 shadow-lg">
+                            <div className="bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
+                                <Landmark className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
                                 <p className="text-purple-100 text-sm">Total Net Salary</p>
                                 <p className="text-3xl font-bold">₹{payrollData.total_net_salary.toLocaleString()}</p>
                             </div>
@@ -195,9 +209,10 @@ export default function PayrollPage() {
 
                     {/* Payroll Table */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                            <ClipboardList className="w-5 h-5 text-indigo-500" />
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                📋 {MONTH_NAMES[selectedMonth - 1]} {selectedYear} Payroll
+                                {MONTH_NAMES[selectedMonth - 1]} {selectedYear} Payroll
                             </h2>
                         </div>
 
@@ -280,12 +295,12 @@ export default function PayrollPage() {
                                                 </td>
                                                 <td className="px-4 py-3 text-center">
                                                     {record.status === 'approved' ? (
-                                                        <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                                            ✓ Approved
+                                                        <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 flex items-center justify-center gap-1">
+                                                            <CheckCircle2 className="w-3 h-3" /> Approved
                                                         </span>
                                                     ) : record.status === 'paid' ? (
-                                                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                            💸 Paid
+                                                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 flex items-center justify-center gap-1">
+                                                            <CreditCard className="w-3 h-3" /> Paid
                                                         </span>
                                                     ) : (
                                                         <button

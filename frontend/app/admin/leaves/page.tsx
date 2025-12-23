@@ -9,16 +9,29 @@ import { toast } from '@/lib/toast'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
 import { TableSkeleton } from '@/components/LoadingSkeleton'
+import { getFullAvatarUrl } from '@/lib/utils'
+import { CheckCircle2, XCircle, SearchX, Palmtree, Stethoscope, Calendar, CircleDollarSign, Baby, Heart, Files, Plane } from 'lucide-react'
+
+const LEAVE_TYPE_ICONS: Record<string, any> = {
+    annual: Palmtree,
+    sick: Stethoscope,
+    casual: Calendar,
+    unpaid: CircleDollarSign,
+    maternity: Baby,
+    paternity: Baby,
+    bereavement: Heart,
+    other: Files,
+}
 
 const LEAVE_TYPES: Record<string, string> = {
-    annual: '🏖️ Annual Leave',
-    sick: '🤒 Sick Leave',
-    casual: '📅 Casual Leave',
-    unpaid: '💰 Unpaid Leave',
-    maternity: '👶 Maternity Leave',
-    paternity: '👨‍👧 Paternity Leave',
-    bereavement: '🕊️ Bereavement Leave',
-    other: '📝 Other',
+    annual: 'Annual Leave',
+    sick: 'Sick Leave',
+    casual: 'Casual Leave',
+    unpaid: 'Unpaid Leave',
+    maternity: 'Maternity Leave',
+    paternity: 'Paternity Leave',
+    bereavement: 'Bereavement Leave',
+    other: 'Other',
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -160,7 +173,10 @@ export default function AdminLeavesPage() {
             <Container className="py-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Leave Management</h1>
+                        <div className="flex items-center gap-3">
+                            <Plane className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Leave Management</h1>
+                        </div>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">Review and manage employee leave requests</p>
                     </div>
 
@@ -207,8 +223,16 @@ export default function AdminLeavesPage() {
                                         <tr key={leave.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
-                                                    <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs">
-                                                        {(leave.user?.full_name || leave.user?.username || 'U').charAt(0).toUpperCase()}
+                                                    <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs overflow-hidden">
+                                                        {leave.user?.avatar_url ? (
+                                                            <img
+                                                                src={getFullAvatarUrl(leave.user.avatar_url) || undefined}
+                                                                alt={leave.user?.username || 'User'}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            (leave.user?.full_name || leave.user?.username || 'U').charAt(0).toUpperCase()
+                                                        )}
                                                     </div>
                                                     <div className="ml-4">
                                                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -219,9 +243,15 @@ export default function AdminLeavesPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-sm text-gray-900 dark:text-gray-100">
-                                                    {LEAVE_TYPES[leave.leave_type] || leave.leave_type}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    {(() => {
+                                                        const Icon = LEAVE_TYPE_ICONS[leave.leave_type] || Files
+                                                        return <Icon className="w-4 h-4 text-gray-400" />
+                                                    })()}
+                                                    <span className="text-sm text-gray-900 dark:text-gray-100">
+                                                        {LEAVE_TYPES[leave.leave_type] || leave.leave_type}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm text-gray-900 dark:text-gray-100">
@@ -262,8 +292,9 @@ export default function AdminLeavesPage() {
                             </table>
                         </div>
                     ) : (
-                        <div className="p-12 text-center text-gray-500 dark:text-gray-400">
-                            No leave requests found matching your filters.
+                        <div className="p-12 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg m-4">
+                            <SearchX className="mx-auto h-12 w-12 text-gray-400 mb-2" />
+                            <p>No leave requests found matching your filters.</p>
                         </div>
                     )}
                 </div>

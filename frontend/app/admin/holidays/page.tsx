@@ -7,6 +7,7 @@ import { holidayAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { CalendarClock, Plus, Loader2, CheckCircle2, Circle } from 'lucide-react'
 
 interface Holiday {
     id: number
@@ -154,16 +155,20 @@ export default function HolidaysPage() {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🎄 Holiday Management</h1>
+                            <div className="flex items-center gap-3">
+                                <CalendarClock className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Holiday Management</h1>
+                            </div>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 Manage company holidays (excluded from working days calculation)
                             </p>
                         </div>
                         <button
                             onClick={openCreateModal}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center gap-1"
                         >
-                            + Add Holiday
+                            <Plus className="w-4 h-4" />
+                            Add Holiday
                         </button>
                     </div>
 
@@ -189,7 +194,10 @@ export default function HolidaysPage() {
                     {/* Holidays Table */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
                         {isLoading ? (
-                            <div className="p-12 text-center text-gray-500">Loading holidays...</div>
+                            <div className="p-12 text-center text-gray-500">
+                                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-600" />
+                                <p>Loading holidays...</p>
+                            </div>
                         ) : holidays.length === 0 ? (
                             <div className="p-12 text-center">
                                 <p className="text-gray-500 dark:text-gray-400 mb-4">No holidays found for {selectedYear}.</p>
@@ -234,12 +242,22 @@ export default function HolidaysPage() {
                                                 <td className="px-6 py-4 text-center">
                                                     <button
                                                         onClick={() => toggleActive(holiday)}
-                                                        className={`px-2 py-1 text-xs rounded-full ${holiday.is_active
+                                                        className={`px-2 py-1 text-xs rounded-full flex items-center gap-1 ${holiday.is_active
                                                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                                             : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                                                             }`}
                                                     >
-                                                        {holiday.is_active ? '✓ Active' : 'Inactive'}
+                                                        {holiday.is_active ? (
+                                                            <>
+                                                                <CheckCircle2 className="w-3 h-3" />
+                                                                Active
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Circle className="w-3 h-3" />
+                                                                Inactive
+                                                            </>
+                                                        )}
                                                     </button>
                                                 </td>
                                                 <td className="px-6 py-4 text-right space-x-2">

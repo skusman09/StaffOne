@@ -7,6 +7,7 @@ import { departmentAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { Building2, Plus, Loader2 } from 'lucide-react'
 
 export default function DepartmentsPage() {
     const router = useRouter()
@@ -115,14 +116,18 @@ export default function DepartmentsPage() {
             <Container className="py-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🏢 Department Management</h1>
+                        <div className="flex items-center gap-3">
+                            <Building2 className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Department Management</h1>
+                        </div>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage organizational divisions and managers</p>
                     </div>
                     <button
                         onClick={() => { resetForm(); setIsModalOpen(true); }}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors flex items-center gap-1"
                     >
-                        ＋ New Department
+                        <Plus className="w-4 h-4" />
+                        New Department
                     </button>
                 </div>
 
@@ -138,7 +143,14 @@ export default function DepartmentsPage() {
                         </thead>
                         <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                             {isLoading ? (
-                                <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">Loading...</td></tr>
+                                <tr>
+                                    <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+                                            <span>Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
                             ) : deptData?.departments?.length === 0 ? (
                                 <tr><td colSpan={4} className="px-6 py-4 text-center text-gray-500">No departments found</td></tr>
                             ) : (

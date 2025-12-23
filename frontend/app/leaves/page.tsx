@@ -8,16 +8,28 @@ import { isAuthenticated } from '@/lib/auth'
 import { toast } from '@/lib/toast'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { Palmtree, Stethoscope, Calendar, CircleDollarSign, Baby, Heart, Files, Plane, Plus, X, Loader2 } from 'lucide-react'
+
+const LEAVE_TYPE_ICONS: Record<string, any> = {
+    annual: Palmtree,
+    sick: Stethoscope,
+    casual: Calendar,
+    unpaid: CircleDollarSign,
+    maternity: Baby,
+    paternity: Baby,
+    bereavement: Heart,
+    other: Files,
+}
 
 const LEAVE_TYPES = [
-    { value: 'annual', label: '🏖️ Annual Leave' },
-    { value: 'sick', label: '🤒 Sick Leave' },
-    { value: 'casual', label: '📅 Casual Leave' },
-    { value: 'unpaid', label: '💰 Unpaid Leave' },
-    { value: 'maternity', label: '👶 Maternity Leave' },
-    { value: 'paternity', label: '👨‍👧 Paternity Leave' },
-    { value: 'bereavement', label: '🕊️ Bereavement Leave' },
-    { value: 'other', label: '📝 Other' },
+    { value: 'annual', label: 'Annual Leave' },
+    { value: 'sick', label: 'Sick Leave' },
+    { value: 'casual', label: 'Casual Leave' },
+    { value: 'unpaid', label: 'Unpaid Leave' },
+    { value: 'maternity', label: 'Maternity Leave' },
+    { value: 'paternity', label: 'Paternity Leave' },
+    { value: 'bereavement', label: 'Bereavement Leave' },
+    { value: 'other', label: 'Other' },
 ]
 
 const STATUS_COLORS: Record<string, string> = {
@@ -119,12 +131,16 @@ export default function LeavesPage() {
             <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Leave Management</h1>
+                        <div className="flex items-center gap-3">
+                            <Plane className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Leave Management</h1>
+                        </div>
                         <button
                             onClick={() => setShowForm(!showForm)}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-1"
                         >
-                            {showForm ? 'Cancel' : '+ Request Leave'}
+                            {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                            {showForm ? 'Cancel' : 'Request Leave'}
                         </button>
                     </div>
 
@@ -217,7 +233,10 @@ export default function LeavesPage() {
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">My Leave Requests</h2>
                         </div>
                         {isLoading ? (
-                            <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading...</div>
+                            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-600" />
+                                <p>Loading...</p>
+                            </div>
                         ) : leaves && leaves.length > 0 ? (
                             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {leaves.map((leave: any) => (
@@ -228,9 +247,15 @@ export default function LeavesPage() {
                                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[leave.status]}`}>
                                                         {leave.status.toUpperCase()}
                                                     </span>
-                                                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                        {LEAVE_TYPES.find(t => t.value === leave.leave_type)?.label || leave.leave_type}
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        {(() => {
+                                                            const Icon = LEAVE_TYPE_ICONS[leave.leave_type] || Files
+                                                            return <Icon className="w-4 h-4 text-gray-400" />
+                                                        })()}
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                            {LEAVE_TYPES.find(t => t.value === leave.leave_type)?.label || leave.leave_type}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                                                     {new Date(leave.start_date).toLocaleDateString()} - {new Date(leave.end_date).toLocaleDateString()}

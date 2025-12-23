@@ -179,6 +179,21 @@ export const authAPI = {
     const response = await api.put('/auth/password', data)
     return response.data
   },
+  uploadAvatar: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post('/auth/upload-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    // Update session with new user data (which includes the new avatar_url)
+    const token = Cookies.get('access_token')
+    if (token) {
+      SessionManager.updateUser(response.data)
+    }
+    return response.data
+  },
 }
 
 // Attendance API

@@ -11,6 +11,18 @@ import { toast } from '@/lib/toast'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
 import Link from 'next/link'
+import { getFullAvatarUrl } from '@/lib/utils'
+import {
+  Users,
+  ClipboardList,
+  CircleCheckBig,
+  Zap,
+  CalendarDays,
+  Download,
+  SearchX,
+  Plus,
+  ShieldCheck
+} from 'lucide-react'
 
 type RoleFilter = 'all' | 'admin' | 'employee'
 
@@ -219,7 +231,10 @@ export default function AdminPage() {
       <Navbar />
       <Container className="py-6">
         <div className="sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Admin Dashboard</h1>
+          <div className="flex items-center gap-3 mb-6">
+            <ShieldCheck className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
+          </div>
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 mb-8">
@@ -227,19 +242,7 @@ export default function AdminPage() {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-6 w-6 text-gray-400 dark:text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                      />
-                    </svg>
+                    <Users className="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -257,19 +260,7 @@ export default function AdminPage() {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-6 w-6 text-gray-400 dark:text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                      />
-                    </svg>
+                    <ClipboardList className="h-6 w-6 text-blue-500 dark:text-blue-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -287,19 +278,7 @@ export default function AdminPage() {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-6 w-6 text-gray-400 dark:text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
+                    <CircleCheckBig className="h-6 w-6 text-green-500 dark:text-green-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -315,19 +294,7 @@ export default function AdminPage() {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-6 w-6 text-gray-400 dark:text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
+                    <Zap className="h-6 w-6 text-amber-500 dark:text-amber-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -343,19 +310,7 @@ export default function AdminPage() {
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <svg
-                      className="h-6 w-6 text-orange-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
+                    <CalendarDays className="h-6 w-6 text-orange-400" />
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
@@ -416,14 +371,7 @@ export default function AdminPage() {
                   onClick={handleExportUsers}
                   className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
+                  <Download className="w-4 h-4" />
                   Export CSV
                 </button>
               </div>
@@ -440,8 +388,16 @@ export default function AdminPage() {
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center flex-1 min-w-0">
-                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold mr-4 shadow-sm">
-                                {(u.full_name || u.username).charAt(0).toUpperCase()}
+                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold mr-4 shadow-sm overflow-hidden">
+                                {u.avatar_url ? (
+                                  <img
+                                    src={getFullAvatarUrl(u.avatar_url) || undefined}
+                                    alt={u.username}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  (u.full_name || u.username).charAt(0).toUpperCase()
+                                )}
                               </div>
                               <div className="min-w-0">
                                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -496,17 +452,10 @@ export default function AdminPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white shadow rounded-lg p-12 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-                <p className="mt-1 text-sm text-gray-500">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-12 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
+                <SearchX className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No users found</h3>
+                <p className="mt-1 text-sm">
                   {userSearchTerm || filterRole !== 'all' ? 'Try adjusting your search or filters' : 'Get started by creating a new user'}
                 </p>
               </div>
@@ -537,14 +486,7 @@ export default function AdminPage() {
                     onClick={handleExportAttendance}
                     className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
+                    <Download className="w-4 h-4" />
                     Export CSV
                   </button>
                 </div>
@@ -598,8 +540,16 @@ export default function AdminPage() {
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
-                              <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3">
-                                {(record.user.full_name || record.user.username).charAt(0).toUpperCase()}
+                              <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs mr-3 overflow-hidden">
+                                {record.user?.avatar_url ? (
+                                  <img
+                                    src={getFullAvatarUrl(record.user.avatar_url) || undefined}
+                                    alt={record.user?.username || 'User'}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  (record.user?.full_name || record.user?.username || 'U').charAt(0).toUpperCase()
+                                )}
                               </div>
                               <div>
                                 <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -658,17 +608,10 @@ export default function AdminPage() {
                 </div>
               </>
             ) : (
-              <div className="bg-white shadow rounded-lg p-12 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No attendance records found</h3>
-                <p className="mt-1 text-sm text-gray-500">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-12 text-center text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-700">
+                <SearchX className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No attendance records found</h3>
+                <p className="mt-1 text-sm">
                   {attendanceSearchTerm ? 'Try adjusting your search' : 'Attendance records will appear here once users start checking in'}
                 </p>
               </div>

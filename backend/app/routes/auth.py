@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+import os
+import uuid
+import shutil
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse, ProfileUpdate, PasswordChange
@@ -79,4 +82,49 @@ def change_password(
         user=current_user,
         current_password=password_data.current_password,
         new_password=password_data.new_password
+    )
+
+
+@router.post("/upload-avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Upload a profile picture for the current user."""
+    # Create uploads directory if it doesn't exist
+    upload_dir = "uploads/avatars"
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    
+    # Validate file type
+    allowed_types = ["image/jpeg", "image/png", "image/webp"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File type not allowed. Please upload a JPEG, PNG or WebP image."
+        )
+    
+    # Generate unique filename
+    file_extension = os.path.splitext(file.filename)[1]
+    if not file_extension:
+        file_extension = ".jpg" # Fallback
+    
+    filename = f"{current_user.id}_{uuid.uuid4().hex}{file_extension}"
+    file_path = os.path.join(upload_dir, filename)
+    
+    # Save file
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    
+    # Update user in database
+    # Construct URL (assuming server runs locally or base URL is known)
+    # We'll store a relative URL /api/static/avatars/filename
+    avatar_url = f"/static/avatars/{filename}"
+    
+    from app.services.auth_service import update_user_profile
+    return update_user_profile(
+        db=db,
+        user=current_user,
+        avatar_url=avatar_url
     )

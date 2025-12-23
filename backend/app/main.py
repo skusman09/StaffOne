@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from app.core.config import settings
@@ -87,6 +89,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Configure Static Files
+if not os.path.exists("uploads/avatars"):
+    os.makedirs("uploads/avatars", exist_ok=True)
+
+app.mount("/static/avatars", StaticFiles(directory="uploads/avatars"), name="static_avatars")
 
 # Include routers
 app.include_router(auth.router)

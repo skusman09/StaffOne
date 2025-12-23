@@ -7,6 +7,15 @@ import { payrollAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import {
+    CircleDollarSign,
+    BarChart3,
+    Clock,
+    Receipt,
+    Filter,
+    Loader2,
+    AlertTriangle
+} from 'lucide-react'
 
 const MONTH_NAMES = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -50,7 +59,7 @@ export default function MySalaryPage() {
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <Navbar />
                 <div className="flex items-center justify-center py-20">
-                    <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
                 </div>
             </div>
         )
@@ -65,14 +74,23 @@ export default function MySalaryPage() {
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">💰 My Salary</h1>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            View your monthly salary breakdown and earnings
-                        </p>
+                        <div className="flex items-center gap-3">
+                            <CircleDollarSign className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Salary</h1>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    View your monthly salary breakdown and earnings
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Month/Year Selector */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+                        <div className="flex items-center gap-2 mb-2 text-indigo-600 dark:text-indigo-400">
+                            <Filter className="w-4 h-4" />
+                            <span className="text-sm font-medium">Filter Period</span>
+                        </div>
                         <div className="flex flex-wrap gap-4 items-center">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Month</label>
@@ -104,13 +122,12 @@ export default function MySalaryPage() {
                     {/* Salary Details */}
                     {salaryLoading ? (
                         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-12 text-center">
+                            <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-2" />
                             <div className="text-gray-500 dark:text-gray-400">Loading salary data...</div>
                         </div>
                     ) : salaryError ? (
                         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-8 text-center">
-                            <svg className="w-16 h-16 mx-auto text-yellow-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                            <AlertTriangle className="w-16 h-16 mx-auto text-yellow-400 mb-4" />
                             <h3 className="text-lg font-medium text-yellow-800 dark:text-yellow-200 mb-2">
                                 Salary Not Yet Generated
                             </h3>
@@ -124,9 +141,14 @@ export default function MySalaryPage() {
                             {/* Summary Card */}
                             <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl p-6 shadow-lg">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <p className="text-indigo-100 text-sm">Net Salary</p>
-                                        <p className="text-4xl font-bold">₹{salaryData.net_salary?.toLocaleString() || '0'}</p>
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-white/20 rounded-xl">
+                                            <CircleDollarSign className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="text-indigo-100 text-sm font-medium">Net Salary</p>
+                                            <p className="text-4xl font-bold">₹{salaryData.net_salary?.toLocaleString() || '0'}</p>
+                                        </div>
                                     </div>
                                     <span className={`px-3 py-1 text-sm rounded-full ${salaryData.status === 'paid' ? 'bg-green-500 text-white' :
                                         salaryData.status === 'approved' ? 'bg-blue-500 text-white' :
@@ -142,12 +164,13 @@ export default function MySalaryPage() {
 
                             {/* Attendance Summary */}
                             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">📊 Attendance Summary</h2>
+                                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                                    <BarChart3 className="w-5 h-5 text-indigo-500" />
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Attendance Summary</h2>
                                 </div>
                                 <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-                                        <p className="text-gray-500 dark:text-gray-400 text-xs mb-1">Working Days</p>
+                                    <div className="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-100 dark:border-gray-600">
+                                        <p className="text-gray-500 dark:text-gray-400 text-xs mb-1 uppercase tracking-wider font-semibold">Working Days</p>
                                         <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{salaryData.office_working_days || 0}</p>
                                     </div>
                                     <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -167,8 +190,9 @@ export default function MySalaryPage() {
 
                             {/* Hours Breakdown */}
                             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">⏱️ Hours Breakdown</h2>
+                                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                                    <Clock className="w-5 h-5 text-indigo-500" />
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Hours Breakdown</h2>
                                 </div>
                                 <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
@@ -192,8 +216,9 @@ export default function MySalaryPage() {
 
                             {/* Salary Breakdown */}
                             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">💵 Salary Breakdown</h2>
+                                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+                                    <Receipt className="w-5 h-5 text-indigo-500" />
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Salary Breakdown</h2>
                                 </div>
                                 <div className="p-6 space-y-4">
                                     <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">

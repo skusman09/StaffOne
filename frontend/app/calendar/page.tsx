@@ -7,6 +7,7 @@ import { attendanceAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { CalendarDays, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTH_NAMES = [
@@ -178,7 +179,7 @@ export default function CalendarPage() {
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
                 <Navbar />
                 <div className="flex items-center justify-center py-20">
-                    <div className="text-gray-500">Loading...</div>
+                    <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
                 </div>
             </div>
         )
@@ -188,10 +189,13 @@ export default function CalendarPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
             <Container className="py-6">
-                {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">📅 Attendance Calendar</h1>
+                <div className="px-4 sm:px-0">
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                        <div className="flex items-center gap-3">
+                            <CalendarDays className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Attendance Calendar</h1>
+                        </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             Visual overview of your attendance
                         </p>
@@ -203,9 +207,7 @@ export default function CalendarPage() {
                             onClick={() => navigateMonth(-1)}
                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
+                            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                         </button>
                         <span className="px-4 py-2 text-lg font-semibold text-gray-900 dark:text-gray-100 min-w-[180px] text-center">
                             {MONTH_NAMES[selectedMonth]} {selectedYear}
@@ -214,9 +216,7 @@ export default function CalendarPage() {
                             onClick={() => navigateMonth(1)}
                             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
-                            <svg className="w-5 h-5 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
+                            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                         </button>
                     </div>
                 </div>

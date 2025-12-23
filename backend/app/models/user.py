@@ -25,6 +25,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     timezone = Column(String, default=settings.DEFAULT_TIMEZONE, nullable=False)  # User's timezone
     monthly_base_salary = Column(Float, nullable=True)  # Default monthly salary
+    avatar_url = Column(String, nullable=True)  # URL to profile picture
     department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

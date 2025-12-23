@@ -7,6 +7,14 @@ import { configAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { Settings, Sprout, Clock, Banknote, ClipboardList, Package, Edit2, Loader2, Lightbulb } from 'lucide-react'
+
+// Map category icons to components
+const CategoryIcons: Record<string, any> = {
+    working_hours: Clock,
+    overtime: Banknote,
+    attendance: ClipboardList,
+}
 
 interface SystemConfig {
     key: string
@@ -18,20 +26,17 @@ interface SystemConfig {
 }
 
 // Group configs by category for better organization
-const CONFIG_CATEGORIES: Record<string, { title: string; icon: string; keys: string[] }> = {
+const CONFIG_CATEGORIES: Record<string, { title: string; keys: string[] }> = {
     working_hours: {
         title: 'Working Hours',
-        icon: '⏰',
         keys: ['STANDARD_WORKING_HOURS', 'OFFICE_START_TIME', 'OFFICE_END_TIME', 'FULL_DAY_THRESHOLD_HOURS', 'HALF_DAY_THRESHOLD_HOURS']
     },
     overtime: {
         title: 'Overtime & Deductions',
-        icon: '💰',
         keys: ['OVERTIME_MULTIPLIER', 'MAX_OVERTIME_HOURS_PER_DAY', 'DEDUCTION_RATE', 'EARLY_EXIT_PENALTY_RATE']
     },
     attendance: {
         title: 'Attendance Rules',
-        icon: '📋',
         keys: ['LATE_ARRIVAL_GRACE_MINUTES', 'AUTO_CHECKOUT_HOURS', 'WEEKEND_DAYS']
     },
 }
@@ -136,7 +141,10 @@ export default function SettingsPage() {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">⚙️ System Settings</h1>
+                            <div className="flex items-center gap-3">
+                                <Settings className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">System Settings</h1>
+                            </div>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 Configure business rules for attendance and salary calculations
                             </p>
@@ -144,9 +152,10 @@ export default function SettingsPage() {
                         <button
                             onClick={() => seedMutation.mutate()}
                             disabled={seedMutation.isPending}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors text-sm"
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
                         >
-                            {seedMutation.isPending ? 'Seeding...' : '🌱 Seed Defaults'}
+                            {seedMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sprout className="w-4 h-4" />}
+                            {seedMutation.isPending ? 'Seeding...' : 'Seed Defaults'}
                         </button>
                     </div>
 
@@ -185,9 +194,13 @@ export default function SettingsPage() {
 
                                 return (
                                     <div key={catKey} className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                                            {(() => {
+                                                const Icon = CategoryIcons[catKey] || Package
+                                                return <Icon className="w-5 h-5 text-indigo-500" />
+                                            })()}
                                             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                                {category.icon} {category.title}
+                                                {category.title}
                                             </h2>
                                         </div>
                                         <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -208,8 +221,9 @@ export default function SettingsPage() {
                                                         <span className="font-semibold text-indigo-600 dark:text-indigo-400">{config.value}</span>
                                                         <button
                                                             onClick={() => openEditModal(config)}
-                                                            className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-300"
+                                                            className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-gray-700 dark:text-gray-300 flex items-center gap-1"
                                                         >
+                                                            <Edit2 className="w-3 h-3" />
                                                             Edit
                                                         </button>
                                                     </div>
@@ -223,9 +237,10 @@ export default function SettingsPage() {
                             {/* Uncategorized Configs */}
                             {uncategorizedConfigs.length > 0 && (
                                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-                                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                                    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+                                        <Package className="w-5 h-5 text-indigo-500" />
                                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                            📦 Other Settings
+                                            Other Settings
                                         </h2>
                                     </div>
                                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -291,8 +306,9 @@ export default function SettingsPage() {
                                 />
                             </div>
                             {editingConfig.description && (
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    💡 {editingConfig.description}
+                                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-start gap-2">
+                                    <Lightbulb className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                                    <span>{editingConfig.description}</span>
                                 </p>
                             )}
                             {updateMutation.isError && (

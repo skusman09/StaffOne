@@ -7,6 +7,7 @@ import { attendanceAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
+import { Calendar, Clock, Search, CheckCircle2, Loader2, AlertCircle, FileText, History } from 'lucide-react'
 
 export default function HistoryPage() {
   const router = useRouter()
@@ -85,12 +86,18 @@ export default function HistoryPage() {
       <Navbar />
       <Container className="py-6">
         <div className="px-4 py-6 sm:px-0">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Attendance History</h1>
+          <div className="flex items-center gap-3 mb-6">
+            <History className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Attendance History</h1>
+          </div>
 
           {/* Monthly Statistics Card */}
           <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl p-6 mb-6 shadow-lg">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-              <h2 className="text-lg font-semibold mb-3 md:mb-0">📅 Monthly Statistics</h2>
+              <div className="flex items-center gap-2 mb-3 md:mb-0">
+                <Calendar className="w-5 h-5" />
+                <h2 className="text-lg font-semibold">Monthly Statistics</h2>
+              </div>
               <div className="flex gap-2">
                 <select
                   value={selectedMonth}
@@ -174,7 +181,10 @@ export default function HistoryPage() {
 
           {/* Date Range Filter */}
           <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-6 shadow">
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">🔍 Filter by Date Range</h3>
+            <div className="flex items-center gap-2 mb-3 ">
+              <Search className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Date Range</h3>
+            </div>
             <div className="flex flex-wrap gap-3 items-end">
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Start Date</label>
@@ -273,17 +283,21 @@ export default function HistoryPage() {
                             <p className="mt-1 text-xs text-red-500">⚠️ Location flagged: {record.location_flag_reason}</p>
                           )}
                           {record.admin_notes && (
-                            <p className="mt-1 text-xs text-indigo-500">📝 {record.admin_notes}</p>
+                            <p className="mt-1 text-xs text-indigo-500 flex items-center gap-1">
+                              <FileText className="w-3 h-3" /> {record.admin_notes}
+                            </p>
                           )}
                         </div>
                         <div className="ml-4">
                           {record.check_out_time ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-                              ✓ Complete
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 gap-1">
+                              <CheckCircle2 className="w-3 h-3" />
+                              Complete
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-                              ⏳ Active
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 gap-1">
+                              <Clock className="w-3 h-3" />
+                              Active
                             </span>
                           )}
                         </div>
