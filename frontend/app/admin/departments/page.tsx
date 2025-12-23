@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { departmentAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 export default function DepartmentsPage() {
     const router = useRouter()
@@ -111,7 +112,7 @@ export default function DepartmentsPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl">
+            <Container className="py-6">
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🏢 Department Management</h1>
@@ -163,7 +164,7 @@ export default function DepartmentsPage() {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </Container>
 
             {/* Modal */}
             {isModalOpen && (

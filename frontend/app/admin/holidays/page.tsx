@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { holidayAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 interface Holiday {
     id: number
@@ -148,7 +149,7 @@ export default function HolidaysPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+            <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="flex justify-between items-center mb-6">
@@ -234,8 +235,8 @@ export default function HolidaysPage() {
                                                     <button
                                                         onClick={() => toggleActive(holiday)}
                                                         className={`px-2 py-1 text-xs rounded-full ${holiday.is_active
-                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                                                             }`}
                                                     >
                                                         {holiday.is_active ? '✓ Active' : 'Inactive'}
@@ -263,7 +264,7 @@ export default function HolidaysPage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </Container>
 
             {/* Modal */}
             {showModal && (

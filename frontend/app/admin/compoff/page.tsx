@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { compoffAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 export default function AdminCompOffPage() {
     const router = useRouter()
@@ -79,7 +80,8 @@ export default function AdminCompOffPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-7xl">
+
+            <Container className="py-6">
                 <div className="mb-6">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🏖️ Manage Comp-off Requests</h1>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Review and approve employee comp-off conversion requests</p>
@@ -133,56 +135,58 @@ export default function AdminCompOffPage() {
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </Container>
 
             {/* Review Modal */}
-            {selectedRequest && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Review Comp-off Request</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                            <strong>{getUserName(selectedRequest.user_id)}</strong> is requesting conversion of <strong>{selectedRequest.ot_hours.toFixed(1)} OT hours</strong> to <strong>{selectedRequest.comp_off_days.toFixed(2)} days</strong>.
-                        </p>
-                        <form onSubmit={handleReview} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Decision</label>
-                                <select
-                                    value={reviewData.status}
-                                    onChange={(e) => setReviewData({ ...reviewData, status: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                >
-                                    <option value="approved">Approve</option>
-                                    <option value="rejected">Reject</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remarks (Optional)</label>
-                                <textarea
-                                    value={reviewData.admin_remarks}
-                                    onChange={(e) => setReviewData({ ...reviewData, admin_remarks: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-24"
-                                />
-                            </div>
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedRequest(null)}
-                                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={reviewMutation.isPending}
-                                    className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
-                                >
-                                    {reviewMutation.isPending ? 'Submitting...' : 'Submit'}
-                                </button>
-                            </div>
-                        </form>
+            {
+                selectedRequest && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Review Comp-off Request</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                <strong>{getUserName(selectedRequest.user_id)}</strong> is requesting conversion of <strong>{selectedRequest.ot_hours.toFixed(1)} OT hours</strong> to <strong>{selectedRequest.comp_off_days.toFixed(2)} days</strong>.
+                            </p>
+                            <form onSubmit={handleReview} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Decision</label>
+                                    <select
+                                        value={reviewData.status}
+                                        onChange={(e) => setReviewData({ ...reviewData, status: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                    >
+                                        <option value="approved">Approve</option>
+                                        <option value="rejected">Reject</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Remarks (Optional)</label>
+                                    <textarea
+                                        value={reviewData.admin_remarks}
+                                        onChange={(e) => setReviewData({ ...reviewData, admin_remarks: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white h-24"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedRequest(null)}
+                                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={reviewMutation.isPending}
+                                        className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+                                    >
+                                        {reviewMutation.isPending ? 'Submitting...' : 'Submit'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }

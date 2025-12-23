@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { payrollAPI, adminAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
+import Container from '@/components/Container'
 
 const MONTH_NAMES = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -92,7 +93,7 @@ export default function PayrollPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <Navbar />
-            <div className="mx-auto py-6 px-4 sm:px-6 lg:px-8 xl:px-12 max-w-full lg:max-w-7xl xl:max-w-[90vw] 2xl:max-w-[1800px]">
+            <Container className="py-6">
                 <div className="px-4 py-6 sm:px-0">
                     {/* Header */}
                     <div className="mb-6">
@@ -300,7 +301,7 @@ export default function PayrollPage() {
                         )}
                     </div>
                 </div>
-            </div>
+            </Container>
         </div>
     )
 }
