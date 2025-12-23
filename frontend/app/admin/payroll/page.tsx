@@ -184,25 +184,25 @@ export default function PayrollPage() {
                     {/* Summary Cards */}
                     {payrollData && (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
-                                <Users className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-blue-100 text-sm">Total Employees</p>
-                                <p className="text-3xl font-bold">{payrollData.total_employees}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 p-5 rounded-xl shadow-lg relative overflow-hidden">
+                                <Users className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Employees</p>
+                                <p className="text-3xl font-mono font-bold text-white">{payrollData.total_employees}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
-                                <Wallet className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-green-100 text-sm">Total Base Salary</p>
-                                <p className="text-3xl font-bold">₹{payrollData.total_base_salary.toLocaleString()}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-5 rounded-xl shadow-lg relative overflow-hidden">
+                                <Wallet className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Base Salary</p>
+                                <p className="text-3xl font-mono font-bold text-white">₹{payrollData.total_base_salary.toLocaleString()}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
-                                <TrendingUp className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-orange-100 text-sm">Total Overtime Pay</p>
-                                <p className="text-3xl font-bold">+₹{payrollData.total_overtime_pay.toLocaleString()}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-amber-500 p-5 rounded-xl shadow-lg relative overflow-hidden">
+                                <TrendingUp className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Overtime Pay</p>
+                                <p className="text-3xl font-mono font-bold text-white">+₹{payrollData.total_overtime_pay.toLocaleString()}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-xl p-5 shadow-lg relative overflow-hidden">
-                                <Landmark className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-purple-100 text-sm">Total Net Salary</p>
-                                <p className="text-3xl font-bold">₹{payrollData.total_net_salary.toLocaleString()}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 p-5 rounded-xl shadow-lg relative overflow-hidden">
+                                <Landmark className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Net Salary</p>
+                                <p className="text-3xl font-mono font-bold text-white">₹{payrollData.total_net_salary.toLocaleString()}</p>
                             </div>
                         </div>
                     )}

@@ -223,7 +223,7 @@ export default function AdminLeavesPage() {
                                         <tr key={leave.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex items-center">
-                                                    <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs overflow-hidden">
+                                                    <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 font-bold text-xs overflow-hidden">
                                                         {leave.user?.avatar_url ? (
                                                             <img
                                                                 src={getFullAvatarUrl(leave.user.avatar_url) || undefined}

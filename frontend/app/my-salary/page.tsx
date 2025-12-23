@@ -14,7 +14,8 @@ import {
     Receipt,
     Filter,
     Loader2,
-    AlertTriangle
+    AlertTriangle,
+    Calendar
 } from 'lucide-react'
 
 const MONTH_NAMES = [
@@ -139,27 +140,31 @@ export default function MySalaryPage() {
                     ) : salaryData ? (
                         <div className="space-y-6">
                             {/* Summary Card */}
-                            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-xl p-6 shadow-lg">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-white/20 rounded-xl">
-                                            <CircleDollarSign className="w-8 h-8 text-white" />
+                            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-xl text-white relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="flex items-center gap-5">
+                                        <div className="p-4 bg-indigo-500/10 rounded-2xl">
+                                            <CircleDollarSign className="w-8 h-8 text-indigo-400" />
                                         </div>
                                         <div>
-                                            <p className="text-indigo-100 text-sm font-medium">Net Salary</p>
-                                            <p className="text-4xl font-bold">₹{salaryData.net_salary?.toLocaleString() || '0'}</p>
+                                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Net Salary</p>
+                                            <p className="text-5xl font-mono font-bold tracking-tighter text-white">₹{salaryData.net_salary?.toLocaleString() || '0'}</p>
                                         </div>
                                     </div>
-                                    <span className={`px-3 py-1 text-sm rounded-full ${salaryData.status === 'paid' ? 'bg-green-500 text-white' :
-                                        salaryData.status === 'approved' ? 'bg-blue-500 text-white' :
-                                            'bg-yellow-500 text-white'
+                                    <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-lg ${salaryData.status === 'paid' ? 'bg-emerald-500/20 text-emerald-400' :
+                                        salaryData.status === 'approved' ? 'bg-blue-500/20 text-blue-400' :
+                                            'bg-amber-500/20 text-amber-400'
                                         }`}>
-                                        {salaryData.status?.charAt(0).toUpperCase() + salaryData.status?.slice(1) || 'Draft'}
+                                        {salaryData.status || 'Draft'}
                                     </span>
                                 </div>
-                                <p className="text-indigo-200 text-sm">
-                                    {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
-                                </p>
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <Calendar className="w-3 h-3" />
+                                    <p className="text-[10px] font-bold uppercase tracking-widest">
+                                        {MONTH_NAMES[selectedMonth - 1]} {selectedYear}
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Attendance Summary */}

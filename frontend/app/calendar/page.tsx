@@ -7,7 +7,7 @@ import { attendanceAPI, authAPI } from '@/lib/api'
 import { isAuthenticated } from '@/lib/auth'
 import Navbar from '@/components/Navbar'
 import Container from '@/components/Container'
-import { CalendarDays, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, ChevronDown, Loader2 } from 'lucide-react'
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTH_NAMES = [
@@ -194,65 +194,111 @@ export default function CalendarPage() {
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                         <div className="flex items-center gap-3">
                             <CalendarDays className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Attendance Calendar</h1>
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Attendance Calendar</h1>
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                             Visual overview of your attendance
                         </p>
                     </div>
 
-                    {/* Month Navigation */}
-                    <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-xl p-2 shadow-sm">
-                        <button
-                            onClick={() => navigateMonth(-1)}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        >
-                            <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                        </button>
-                        <span className="px-4 py-2 text-lg font-semibold text-gray-900 dark:text-gray-100 min-w-[180px] text-center">
-                            {MONTH_NAMES[selectedMonth]} {selectedYear}
-                        </span>
-                        <button
-                            onClick={() => navigateMonth(1)}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                        >
-                            <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                        </button>
+                    {/* Month/Year Selection */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-2xl mb-10">
+                        <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 shadow-inner">
+                            <button
+                                onClick={() => navigateMonth(-1)}
+                                className="p-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all active:scale-95"
+                                title="Previous Month"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+
+                            <div className="h-6 w-px bg-slate-800 mx-1"></div>
+
+                            <div className="flex gap-px px-1">
+                                <div className="relative group">
+                                    <select
+                                        value={selectedMonth}
+                                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                        className="appearance-none bg-transparent hover:bg-slate-800 text-white text-base font-bold rounded-l-lg pl-4 pr-9 py-2.5 focus:outline-none focus:bg-slate-800 transition-all cursor-pointer"
+                                    >
+                                        {MONTH_NAMES.map((name, index) => (
+                                            <option key={name} value={index} className="bg-slate-900 text-white font-sans">{name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-indigo-400 transition-colors">
+                                        <ChevronDown className="w-4 h-4" />
+                                    </div>
+                                </div>
+
+                                <div className="relative group">
+                                    <select
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                        className="appearance-none bg-transparent hover:bg-slate-800 text-white text-base font-bold rounded-r-lg pl-4 pr-9 py-2.5 focus:outline-none focus:bg-slate-800 transition-all cursor-pointer border-l border-slate-800"
+                                    >
+                                        {Array.from({ length: 11 }, (_, i) => currentDate.getFullYear() - 5 + i).map(year => (
+                                            <option key={year} value={year} className="bg-slate-900 text-white font-sans">{year}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500 group-hover:text-indigo-400 transition-colors">
+                                        <ChevronDown className="w-4 h-4" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="h-6 w-px bg-slate-800 mx-1"></div>
+
+                            <button
+                                onClick={() => navigateMonth(1)}
+                                className="p-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all active:scale-95"
+                                title="Next Month"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-500/5 border border-indigo-500/10 rounded-xl">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-500 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            </span>
+                            <p className="text-[10px] uppercase tracking-widest text-indigo-400 font-bold">Month View</p>
+                        </div>
                     </div>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Full Days</p>
-                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.fullDays}</p>
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-5 rounded-2xl shadow-lg hover:bg-slate-800/50 transition-colors">
+                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Full Days</p>
+                        <p className="text-3xl font-mono font-bold text-white">{stats.fullDays}</p>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Half Days</p>
-                        <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.halfDays}</p>
+                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-amber-500 p-5 rounded-2xl shadow-lg hover:bg-slate-800/50 transition-colors">
+                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Half Days</p>
+                        <p className="text-3xl font-mono font-bold text-white">{stats.halfDays}</p>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Absent</p>
-                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.absentDays}</p>
+                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-rose-500 p-5 rounded-2xl shadow-lg hover:bg-slate-800/50 transition-colors">
+                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Absent</p>
+                        <p className="text-3xl font-mono font-bold text-white">{stats.absentDays}</p>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Hours</p>
-                        <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.totalHours.toFixed(1)}</p>
+                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 p-5 rounded-2xl shadow-lg hover:bg-slate-800/50 transition-colors">
+                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Hours</p>
+                        <p className="text-3xl font-mono font-bold text-white">{stats.totalHours.toFixed(1)}</p>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Attendance</p>
-                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 p-5 rounded-2xl shadow-lg hover:bg-slate-800/50 transition-colors">
+                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Attendance</p>
+                        <p className="text-3xl font-mono font-bold text-white">
                             {stats.workingDays > 0 ? Math.round(((stats.fullDays + stats.halfDays * 0.5) / stats.workingDays) * 100) : 0}%
                         </p>
                     </div>
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
                     {/* Weekday Headers */}
-                    <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+                    <div className="grid grid-cols-7 bg-slate-950/80 border-b border-slate-800">
                         {WEEKDAYS.map(day => (
-                            <div key={day} className="p-3 text-center text-sm font-semibold text-gray-600 dark:text-gray-400">
+                            <div key={day} className="p-5 text-center text-[10px] uppercase tracking-[0.2em] font-black text-slate-500">
                                 {day}
                             </div>
                         ))}
@@ -260,55 +306,60 @@ export default function CalendarPage() {
 
                     {/* Calendar Days */}
                     {isLoading ? (
-                        <div className="p-12 text-center text-gray-500">Loading calendar...</div>
+                        <div className="p-32 text-center text-slate-500 italic">
+                            <Loader2 className="w-10 h-10 animate-spin mx-auto mb-6 text-indigo-500/50" />
+                            <p className="text-sm font-medium tracking-wide">Syncing attendance records...</p>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-7">
                             {calendarDays.map((day, idx) => (
                                 <div
                                     key={idx}
                                     className={`
-                                        min-h-[100px] p-2 border-b border-r border-gray-100 dark:border-gray-700/50
-                                        ${!day.isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/50 opacity-50' : ''}
-                                        ${day.isToday ? 'ring-2 ring-inset ring-indigo-500' : ''}
-                                        ${day.isWeekend && day.isCurrentMonth ? 'bg-gray-50 dark:bg-gray-800/30' : ''}
+                                        min-h-[120px] p-4 border-b border-r border-slate-800/40 transition-all duration-300
+                                        ${!day.isCurrentMonth ? 'bg-slate-950/40 opacity-20 pointer-events-none' : 'hover:bg-indigo-500/5'}
+                                        ${day.isToday ? 'bg-indigo-500/10 ring-2 ring-inset ring-indigo-500/30' : ''}
+                                        ${day.isWeekend && day.isCurrentMonth ? 'bg-slate-950/20' : ''}
                                     `}
                                 >
                                     {/* Date Number */}
-                                    <div className="flex justify-between items-start mb-1">
+                                    <div className="flex justify-between items-start mb-3">
                                         <span className={`
-                                            w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium
-                                            ${day.isToday ? 'bg-indigo-600 text-white' : 'text-gray-700 dark:text-gray-300'}
+                                            w-9 h-9 flex items-center justify-center rounded-2xl text-base font-black shadow-lg transition-all transform
+                                            ${day.isToday ? 'bg-indigo-600 text-white scale-110 shadow-indigo-500/40' : 'text-slate-500 group-hover:text-slate-300'}
                                         `}>
                                             {day.date.getDate()}
                                         </span>
 
-                                        {/* Status Badge */}
+                                        {/* Status Icon */}
                                         {day.isCurrentMonth && (
-                                            <span className={`
-                                                px-1.5 py-0.5 text-[10px] font-medium rounded
-                                                ${day.status === 'full' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : ''}
-                                                ${day.status === 'half' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : ''}
-                                                ${day.status === 'absent' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : ''}
-                                                ${day.status === 'weekend' ? 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' : ''}
-                                            `}>
-                                                {day.status === 'full' && '✓'}
-                                                {day.status === 'half' && '½'}
-                                                {day.status === 'absent' && '✗'}
-                                                {day.status === 'weekend' && 'Off'}
-                                            </span>
+                                            <div className="flex items-center gap-1.5 pt-1">
+                                                {day.status === 'full' && (
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.7)]" title="Full Day" />
+                                                )}
+                                                {day.status === 'half' && (
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.7)]" title="Half Day" />
+                                                )}
+                                                {day.status === 'absent' && (
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.7)]" title="Absent" />
+                                                )}
+                                                {day.isWeekend && (
+                                                    <span className="text-[9px] font-black text-slate-700 uppercase tracking-tighter">Off</span>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
 
                                     {/* Hours Worked */}
                                     {day.isCurrentMonth && day.totalHours > 0 && (
-                                        <div className="mt-1">
-                                            <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                                                {day.totalHours.toFixed(1)}h
+                                        <div className="mt-auto pt-2 space-y-1.5">
+                                            <p className="text-xl font-mono font-black text-white tracking-tighter leading-none">
+                                                {day.totalHours.toFixed(1)}<span className="text-[10px] font-bold text-indigo-400 ml-0.5">H</span>
                                             </p>
                                             {day.records.length > 1 && (
-                                                <p className="text-[10px] text-gray-400">
-                                                    {day.records.length} shifts
-                                                </p>
+                                                <div className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-[8px] font-black text-indigo-400 uppercase tracking-widest border border-indigo-500/20">
+                                                    {day.records.length} SHIFTS
+                                                </div>
                                             )}
                                         </div>
                                     )}
@@ -319,22 +370,22 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Legend */}
-                <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-green-100 dark:bg-green-900/30"></span>
-                        <span>Full Day (8+ hrs)</span>
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-8 px-6 py-4 bg-slate-900/50 rounded-2xl border border-slate-800/50">
+                    <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Full (8h+)</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-yellow-100 dark:bg-yellow-900/30"></span>
-                        <span>Half Day (4-8 hrs)</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Half (4-8h)</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-red-100 dark:bg-red-900/30"></span>
-                        <span>Absent</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"></div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Absent</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <span className="w-4 h-4 rounded bg-gray-200 dark:bg-gray-700"></span>
-                        <span>Weekend</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded border border-slate-700 bg-slate-950/40"></div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Weekend</span>
                     </div>
                 </div>
             </Container>

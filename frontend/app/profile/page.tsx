@@ -202,7 +202,7 @@ export default function ProfilePage() {
             {/* Avatar Section */}
             <div className="mb-8 flex flex-col items-center">
               <div className="relative group">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-4xl font-bold text-indigo-600 dark:text-indigo-300">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-4xl font-bold text-indigo-600 dark:text-indigo-400">
                   {user?.avatar_url ? (
                     <img
                       src={getFullAvatarUrl(user.avatar_url) || undefined}

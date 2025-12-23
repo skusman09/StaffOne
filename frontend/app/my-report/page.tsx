@@ -147,24 +147,24 @@ export default function MyReportPage() {
                     ) : metrics ? (
                         <>
                             {/* Overview Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-6 shadow-lg">
-                                    <p className="text-blue-100 text-sm">Days Worked</p>
-                                    <p className="text-4xl font-bold">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 rounded-2xl p-6 shadow-xl">
+                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Days Worked</p>
+                                    <p className="text-4xl font-mono font-bold text-white">
                                         {metrics.days_worked}
-                                        <span className="text-lg font-normal text-blue-200">/ {metrics.office_working_days}</span>
+                                        <span className="text-lg font-normal text-slate-500 ml-1">/ {metrics.office_working_days}</span>
                                     </p>
-                                    <p className="text-sm text-blue-200 mt-1">{metrics.days_absent} absent days</p>
+                                    <p className="text-[10px] text-rose-400 font-bold uppercase tracking-widest mt-2">{metrics.days_absent} absent days</p>
                                 </div>
-                                <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-lg">
-                                    <p className="text-green-100 text-sm">Total Hours Worked</p>
-                                    <p className="text-4xl font-bold">{metrics.total_hours_worked.toFixed(1)}h</p>
-                                    <p className="text-sm text-green-200 mt-1">Expected: {metrics.expected_hours.toFixed(1)}h</p>
+                                <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 rounded-2xl p-6 shadow-xl">
+                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Hours Worked</p>
+                                    <p className="text-4xl font-mono font-bold text-white">{metrics.total_hours_worked.toFixed(1)}<span className="text-lg font-normal text-slate-500 ml-1">h</span></p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Expected: {metrics.expected_hours.toFixed(1)}h</p>
                                 </div>
-                                <div className="bg-gradient-to-br from-purple-500 to-violet-600 text-white rounded-xl p-6 shadow-lg">
-                                    <p className="text-purple-100 text-sm">Average Hours/Day</p>
-                                    <p className="text-4xl font-bold">{metrics.average_hours_per_day.toFixed(1)}h</p>
-                                    <p className="text-sm text-purple-200 mt-1">Standard: 9h</p>
+                                <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 rounded-2xl p-6 shadow-xl">
+                                    <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Average Hours/Day</p>
+                                    <p className="text-4xl font-mono font-bold text-white">{metrics.average_hours_per_day.toFixed(1)}<span className="text-lg font-normal text-slate-500 ml-1">h</span></p>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">Target: 9h</p>
                                 </div>
                             </div>
 

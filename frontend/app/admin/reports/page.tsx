@@ -230,24 +230,24 @@ export default function AdminReportsPage() {
 
                     {/* Summary Stats */}
                     {reportData && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
-                                <Users className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-indigo-100 text-sm">Total Employees</p>
-                                <p className="text-4xl font-bold">{reportData.total_users}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 p-6 rounded-xl shadow-lg relative overflow-hidden">
+                                <Users className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Employees</p>
+                                <p className="text-4xl font-mono font-bold text-white">{reportData.total_users}</p>
                             </div>
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
-                                <Clock className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-green-100 text-sm">Total Hours Worked</p>
-                                <p className="text-4xl font-bold">
-                                    {summariesArray.reduce((sum, s) => sum + s.total_hours, 0).toFixed(1)}h
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-6 rounded-xl shadow-lg relative overflow-hidden">
+                                <Clock className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Hours Worked</p>
+                                <p className="text-4xl font-mono font-bold text-white">
+                                    {summariesArray.reduce((sum, s) => sum + s.total_hours, 0).toFixed(1)}<span className="text-xl font-normal text-slate-500 ml-1">h</span>
                                 </p>
                             </div>
-                            <div className="bg-gradient-to-br from-orange-500 to-amber-600 text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
-                                <Zap className="absolute -right-2 -bottom-2 w-20 h-20 text-white/10" />
-                                <p className="text-orange-100 text-sm">Total Overtime Hours</p>
-                                <p className="text-4xl font-bold">
-                                    {summariesArray.reduce((sum, s) => sum + s.overtime_hours, 0).toFixed(1)}h
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-amber-500 p-6 rounded-xl shadow-lg relative overflow-hidden">
+                                <Zap className="absolute -right-2 -bottom-2 w-20 h-20 text-white/5" />
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Total Overtime Hours</p>
+                                <p className="text-4xl font-mono font-bold text-white">
+                                    {summariesArray.reduce((sum, s) => sum + s.overtime_hours, 0).toFixed(1)}<span className="text-xl font-normal text-slate-500 ml-1">h</span>
                                 </p>
                             </div>
                         </div>
@@ -309,7 +309,7 @@ export default function AdminReportsPage() {
                                             <tr key={summary.user_id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
-                                                        <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                                                        <div className="flex-shrink-0 h-10 w-10 bg-slate-800 border border-slate-700 rounded-full flex items-center justify-center text-indigo-400 font-medium font-bold">
                                                             {summary.user_full_name.charAt(0).toUpperCase()}
                                                         </div>
                                                         <div className="ml-4">

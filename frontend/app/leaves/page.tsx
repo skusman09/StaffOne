@@ -146,22 +146,22 @@ export default function LeavesPage() {
 
                     {/* Stats Cards */}
                     {stats && (
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Leaves Taken</p>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total_leaves_taken}</p>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-gray-500 p-5 rounded-xl shadow-lg">
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Leaves Taken</p>
+                                <p className="text-2xl font-mono font-bold text-white">{stats.total_leaves_taken}</p>
                             </div>
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Days Used</p>
-                                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{stats.total_days_taken}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 p-5 rounded-xl shadow-lg">
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Days Used</p>
+                                <p className="text-2xl font-mono font-bold text-indigo-400">{stats.total_days_taken}</p>
                             </div>
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Pending</p>
-                                <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending_requests}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-amber-500 p-5 rounded-xl shadow-lg">
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Pending</p>
+                                <p className="text-2xl font-mono font-bold text-amber-400">{stats.pending_requests}</p>
                             </div>
-                            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Approved (Year)</p>
-                                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.approved_this_year}</p>
+                            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-5 rounded-xl shadow-lg">
+                                <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Approved (Year)</p>
+                                <p className="text-2xl font-mono font-bold text-emerald-400">{stats.approved_this_year}</p>
                             </div>
                         </div>
                     )}

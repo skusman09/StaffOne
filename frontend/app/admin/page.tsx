@@ -238,86 +238,76 @@ export default function AdminPage() {
 
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 mb-8">
-            <div className="card">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Users className="h-6 w-6 text-indigo-500 dark:text-indigo-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Users</dt>
-                      <dd className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {Array.isArray(users) ? users.length : 0}
-                      </dd>
-                    </dl>
-                  </div>
+            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 p-6 rounded-xl shadow-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Users className="h-6 w-6 text-indigo-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Total Users</dt>
+                    <dd className="text-2xl font-mono font-bold text-white">
+                      {Array.isArray(users) ? users.length : 0}
+                    </dd>
+                  </dl>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <ClipboardList className="h-6 w-6 text-blue-500 dark:text-blue-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Total Records</dt>
-                      <dd className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {Array.isArray(attendance) ? attendance.length : 0}
-                      </dd>
-                    </dl>
-                  </div>
+            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 p-6 rounded-xl shadow-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <ClipboardList className="h-6 w-6 text-blue-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Total Records</dt>
+                    <dd className="text-2xl font-mono font-bold text-white">
+                      {Array.isArray(attendance) ? attendance.length : 0}
+                    </dd>
+                  </dl>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <CircleCheckBig className="h-6 w-6 text-green-500 dark:text-green-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Today's Check-ins</dt>
-                      <dd className="text-lg font-semibold text-gray-900 dark:text-gray-100">{todaysCheckins}</dd>
-                    </dl>
-                  </div>
+            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-6 rounded-xl shadow-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <CircleCheckBig className="h-6 w-6 text-emerald-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Today's Check-ins</dt>
+                    <dd className="text-2xl font-mono font-bold text-white">{todaysCheckins}</dd>
+                  </dl>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Zap className="h-6 w-6 text-amber-500 dark:text-amber-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Active Sessions</dt>
-                      <dd className="text-lg font-semibold text-gray-900 dark:text-gray-100">{activeSessions}</dd>
-                    </dl>
-                  </div>
+            <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-amber-500 p-6 rounded-xl shadow-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <Zap className="h-6 w-6 text-amber-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Active Sessions</dt>
+                    <dd className="text-2xl font-mono font-bold text-white">{activeSessions}</dd>
+                  </dl>
                 </div>
               </div>
             </div>
 
-            <Link href="/admin/leaves" className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <CalendarDays className="h-6 w-6 text-orange-400" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">Leave Requests</dt>
-                      <dd className="text-lg font-semibold text-orange-600 dark:text-orange-400">View All</dd>
-                    </dl>
-                  </div>
+            <Link href="/admin/leaves" className="bg-slate-900 border border-slate-800 border-l-4 border-l-rose-500 p-6 rounded-xl shadow-lg hover:bg-slate-800 transition-all">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <CalendarDays className="h-6 w-6 text-rose-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Leave Requests</dt>
+                    <dd className="text-lg font-bold text-rose-400">View All</dd>
+                  </dl>
                 </div>
               </div>
             </Link>
@@ -388,7 +378,7 @@ export default function AdminPage() {
                         <div className="px-4 py-4 sm:px-6">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center flex-1 min-w-0">
-                              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold mr-4 shadow-sm overflow-hidden">
+                              <div className="h-10 w-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 font-bold mr-4 shadow-sm overflow-hidden">
                                 {u.avatar_url ? (
                                   <img
                                     src={getFullAvatarUrl(u.avatar_url) || undefined}

@@ -26,7 +26,7 @@ type ShiftType = typeof SHIFT_TYPES[keyof typeof SHIFT_TYPES]
 const SHIFT_TYPE_CONFIG: Record<ShiftType, { label: string; color: string; bg: string }> = {
   regular: { label: 'Regular', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-900' },
   break: { label: 'Break', color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-900' },
-  overtime: { label: 'Overtime', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-900' },
+  overtime: { label: 'Overtime', color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-900' },
 }
 
 export default function DashboardPage() {

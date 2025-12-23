@@ -165,23 +165,23 @@ export default function AnalyticsPage() {
                         <>
                             {/* Today's Overview */}
                             <div className="mb-8">
-                                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Today's Overview</h2>
+                                <h2 className="text-xl font-semibold text-white mb-6">Today's Overview</h2>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
-                                        <p className="text-green-100 text-sm">Check-ins</p>
-                                        <p className="text-4xl font-bold">{dashboard.today_checkins}</p>
+                                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-6 rounded-xl shadow-lg">
+                                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Check-ins</p>
+                                        <p className="text-4xl font-mono font-bold text-white">{dashboard.today_checkins}</p>
                                     </div>
-                                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
-                                        <p className="text-blue-100 text-sm">Check-outs</p>
-                                        <p className="text-4xl font-bold">{dashboard.today_checkouts}</p>
+                                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 p-6 rounded-xl shadow-lg">
+                                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Check-outs</p>
+                                        <p className="text-4xl font-mono font-bold text-white">{dashboard.today_checkouts}</p>
                                     </div>
-                                    <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 text-white p-6 rounded-lg shadow-lg">
-                                        <p className="text-yellow-100 text-sm">Still Working</p>
-                                        <p className="text-4xl font-bold">{dashboard.today_pending}</p>
+                                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-amber-500 p-6 rounded-xl shadow-lg">
+                                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Still Working</p>
+                                        <p className="text-4xl font-mono font-bold text-white">{dashboard.today_pending}</p>
                                     </div>
-                                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
-                                        <p className="text-purple-100 text-sm">On Leave</p>
-                                        <p className="text-4xl font-bold">{dashboard.today_on_leave}</p>
+                                    <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 p-6 rounded-xl shadow-lg">
+                                        <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">On Leave</p>
+                                        <p className="text-4xl font-mono font-bold text-white">{dashboard.today_on_leave}</p>
                                     </div>
                                 </div>
                             </div>

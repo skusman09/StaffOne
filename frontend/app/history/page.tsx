@@ -92,88 +92,95 @@ export default function HistoryPage() {
           </div>
 
           {/* Monthly Statistics Card */}
-          <div className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl p-6 mb-6 shadow-lg">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-              <div className="flex items-center gap-2 mb-3 md:mb-0">
-                <Calendar className="w-5 h-5" />
-                <h2 className="text-lg font-semibold">Monthly Statistics</h2>
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 shadow-lg text-white">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+              <div className="flex items-center gap-3 mb-3 md:mb-0">
+                <div className="p-2 bg-indigo-500/10 rounded-lg">
+                  <Calendar className="w-5 h-5 text-indigo-400" />
+                </div>
+                <h2 className="text-xl font-semibold">Monthly Statistics</h2>
               </div>
               <div className="flex gap-2">
                 <select
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  className="px-3 py-1.5 rounded-lg bg-white/20 border border-white/30 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 >
                   {monthNames.map((name, i) => (
-                    <option key={i} value={i + 1} className="text-gray-900">{name}</option>
+                    <option key={i} value={i + 1} className="text-gray-900 dark:text-white">{name}</option>
                   ))}
                 </select>
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="px-3 py-1.5 rounded-lg bg-white/20 border border-white/30 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 >
                   {yearOptions.map((year) => (
-                    <option key={year} value={year} className="text-gray-900">{year}</option>
+                    <option key={year} value={year} className="text-gray-900 dark:text-white">{year}</option>
                   ))}
                 </select>
               </div>
             </div>
 
             {monthlyLoading ? (
-              <div className="text-center py-4 text-white/70">Loading monthly stats...</div>
+              <div className="text-center py-8 text-slate-500">Loading monthly stats...</div>
             ) : monthlyStats ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs">Days Worked</p>
-                  <p className="text-2xl font-bold">{monthlyStats.days_worked}<span className="text-sm font-normal text-white/70">/{monthlyStats.working_days_in_month}</span></p>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 transition-all">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Days Worked</p>
+                  <p className="text-2xl font-bold text-white">{monthlyStats.days_worked}<span className="text-xs font-normal text-slate-500 ml-1">/{monthlyStats.working_days_in_month}</span></p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs">Absences</p>
-                  <p className="text-2xl font-bold text-red-300">{monthlyStats.days_absent}</p>
+                <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 transition-all">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Absences</p>
+                  <p className="text-2xl font-bold text-rose-400">{monthlyStats.days_absent}</p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs">Total Hours</p>
-                  <p className="text-2xl font-bold">{monthlyStats.total_hours}<span className="text-sm font-normal">h</span></p>
+                <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 transition-all">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Total Hours</p>
+                  <p className="text-2xl font-bold text-white">{monthlyStats.total_hours}<span className="text-xs font-normal text-slate-500 ml-1">h</span></p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs">Overtime</p>
-                  <p className="text-2xl font-bold text-yellow-300">{monthlyStats.overtime_hours}<span className="text-sm font-normal">h</span></p>
+                <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 transition-all">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Overtime</p>
+                  <p className="text-2xl font-bold text-amber-400">{monthlyStats.overtime_hours}<span className="text-xs font-normal text-slate-500 ml-1">h</span></p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs">Avg/Day</p>
-                  <p className="text-2xl font-bold">{monthlyStats.avg_hours_per_day}<span className="text-sm font-normal">h</span></p>
+                <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 transition-all">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Avg/Day</p>
+                  <p className="text-2xl font-bold text-white">{monthlyStats.avg_hours_per_day}<span className="text-xs font-normal text-slate-500 ml-1">h</span></p>
                 </div>
-                <div className="bg-white/10 rounded-lg p-3">
-                  <p className="text-white/70 text-xs">Attendance</p>
-                  <p className="text-2xl font-bold text-green-300">{monthlyStats.attendance_percentage}<span className="text-sm font-normal">%</span></p>
+                <div className="bg-slate-800/40 border border-slate-700/30 rounded-xl p-4 transition-all">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Attendance</p>
+                  <p className="text-2xl font-bold text-emerald-400">{monthlyStats.attendance_percentage}<span className="text-xs font-normal text-slate-500 ml-1">%</span></p>
                 </div>
               </div>
             ) : (
-              <div className="text-center py-4 text-white/70">No data available</div>
+              <div className="text-center py-8 text-slate-500 italic">No data available</div>
             )}
           </div>
 
           {/* Summary Card (Last 30 Days) */}
           {workingHours && (
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-6 mb-6 shadow-lg">
-              <h2 className="text-lg font-medium mb-3">Last 30 Days Summary</h2>
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 mb-6 shadow-lg text-white">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 bg-blue-500/10 rounded-lg">
+                  <Clock className="w-5 h-5 text-blue-400" />
+                </div>
+                <h2 className="text-xl font-semibold">Last 30 Days Effort</h2>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-indigo-200 text-sm">Total Hours</p>
-                  <p className="text-3xl font-bold">{workingHours.total_hours.toFixed(1)}h</p>
+                <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Total Hours</p>
+                  <p className="text-4xl font-mono font-bold text-white">{workingHours.total_hours.toFixed(1)}<span className="text-xs font-normal text-indigo-400 ml-1">h</span></p>
                 </div>
-                <div>
-                  <p className="text-indigo-200 text-sm">Regular</p>
-                  <p className="text-2xl font-semibold">{workingHours.regular_hours.toFixed(1)}h</p>
+                <div className="bg-slate-800/40 rounded-xl p-4 text-center border border-slate-700/30">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Regular</p>
+                  <p className="text-2xl font-bold text-blue-400">{workingHours.regular_hours.toFixed(1)}h</p>
                 </div>
-                <div>
-                  <p className="text-indigo-200 text-sm">Overtime</p>
-                  <p className="text-2xl font-semibold text-yellow-300">{workingHours.overtime_hours.toFixed(1)}h</p>
+                <div className="bg-slate-800/40 rounded-xl p-4 text-center border border-slate-700/30">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Overtime</p>
+                  <p className="text-2xl font-bold text-purple-400">{workingHours.overtime_hours.toFixed(1)}h</p>
                 </div>
-                <div>
-                  <p className="text-indigo-200 text-sm">Records</p>
-                  <p className="text-2xl font-semibold">{workingHours.records_count}</p>
+                <div className="bg-slate-800/40 rounded-xl p-4 text-center border border-slate-700/30">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Records</p>
+                  <p className="text-2xl font-bold text-emerald-400">{workingHours.records_count}</p>
                 </div>
               </div>
             </div>

@@ -96,18 +96,18 @@ export default function CompOffPage() {
                     </div>
 
                     {/* Balance Card */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-xl p-6 shadow-lg">
-                            <p className="text-indigo-100 text-sm">Approved Days</p>
-                            <p className="text-4xl font-bold">{balance?.approved_days?.toFixed(1) || '0.0'}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-indigo-500 p-6 rounded-xl shadow-lg">
+                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Approved Days</p>
+                            <p className="text-4xl font-mono font-bold text-white">{balance?.approved_days?.toFixed(1) || '0.0'}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 text-white rounded-xl p-6 shadow-lg">
-                            <p className="text-green-100 text-sm">Available Days</p>
-                            <p className="text-4xl font-bold">{balance?.available_days?.toFixed(1) || '0.0'}</p>
+                        <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-emerald-500 p-6 rounded-xl shadow-lg">
+                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Available Days</p>
+                            <p className="text-4xl font-mono font-bold text-white">{balance?.available_days?.toFixed(1) || '0.0'}</p>
                         </div>
-                        <div className="bg-gradient-to-br from-gray-500 to-gray-600 text-white rounded-xl p-6 shadow-lg">
-                            <p className="text-gray-100 text-sm">Used Days</p>
-                            <p className="text-4xl font-bold">{balance?.used_days?.toFixed(1) || '0.0'}</p>
+                        <div className="bg-slate-900 border border-slate-800 border-l-4 border-l-blue-500 p-6 rounded-xl shadow-lg">
+                            <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest mb-1">Used Days</p>
+                            <p className="text-4xl font-mono font-bold text-white">{balance?.used_days?.toFixed(1) || '0.0'}</p>
                         </div>
                     </div>
 
