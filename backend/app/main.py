@@ -22,8 +22,8 @@ except Exception as e:
 
 # Create FastAPI app
 app = FastAPI(
-    title="Check-In/Check-Out API",
-    description="Attendance tracking system API",
+    title="StaffOne API",
+    description="StaffOne HR Management System API",
     version="1.0.0"
 )
 
@@ -33,9 +33,9 @@ def custom_openapi():
     app.openapi_schema = None
     
     openapi_schema = get_openapi(
-        title="Check-In/Check-Out API",
+        title="StaffOne API",
         version="1.0.0",
-        description="Attendance tracking system API",
+        description="StaffOne HR Management System API",
         routes=app.routes,
     )
     
@@ -118,7 +118,7 @@ app.include_router(compoff.router)
 def root():
     """Root endpoint."""
     return {
-        "message": "Check-In/Check-Out API",
+        "message": "StaffOne API",
         "version": "2.0.0",
         "features": ["Timezone support", "Shift management", "Geofencing", "Working hours", "Admin controls", "Leave management", "Background scheduler"],
         "docs": "/docs"

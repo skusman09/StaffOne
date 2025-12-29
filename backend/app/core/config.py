@@ -6,7 +6,7 @@ from typing import Optional, List
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "sqlite:///./checkinout.db"
+    DATABASE_URL: str = "sqlite:///./staffone.db"
     
     # JWT Settings
     SECRET_KEY: str = "your-secret-key-change-in-production"
@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
     SMTP_USER: Optional[str] = os.getenv("SMTP_USER")
     SMTP_PASSWORD: Optional[str] = os.getenv("SMTP_PASSWORD")
-    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@hrms.com")
-    SMTP_FROM_NAME: str = "HRMS System"
+    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@staffone.com")
+    SMTP_FROM_NAME: str = "StaffOne HRMS"
     SMTP_TLS: bool = os.getenv("SMTP_TLS", "True").lower() == "true"
     
     @property

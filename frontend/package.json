@@ -1,6 +1,6 @@
 {
-  "name": "checkinout-frontend",
-  "version": "1.0.0",
+  "name": "staffone-frontend",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

@@ -236,10 +236,10 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold text-slate-900 dark:text-white">
-                CheckIn
+                Staff
               </span>
               <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 tracking-wider uppercase">
-                Pro
+                One
               </span>
             </div>
           </Link>

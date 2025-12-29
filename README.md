@@ -1,4 +1,4 @@
-# Check-In/Check-Out System
+# StaffOne HR Management System
 
 A full-stack attendance tracking application built with FastAPI backend and Next.js frontend.
 
