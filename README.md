@@ -295,5 +295,4 @@ This project is open source and available for use.
 
 ## 👤 Author
 
-Built with ❤️ for attendance tracking
-
+SHAIKH MOHAMMED USMAN
