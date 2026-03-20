@@ -9,6 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { isAuthenticated, getUser } from '@/lib/auth'
 import { SessionManager } from '@/lib/session'
 import { ThemeToggle } from './ThemeToggle'
+import NotificationBell from './NotificationBell'
 import {
   LayoutDashboard,
   Briefcase,
@@ -330,6 +331,7 @@ export default function Navbar() {
 
           {/* Desktop Right Side - User Dropdown */}
           <div className="hidden md:flex items-center space-x-3">
+            <NotificationBell />
             <ThemeToggle />
 
             {/* User Profile Dropdown */}

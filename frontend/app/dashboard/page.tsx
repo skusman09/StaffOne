@@ -11,6 +11,8 @@ import { DashboardSkeleton } from '@/components/LoadingSkeleton'
 import Navbar from '@/components/Navbar'
 import Link from 'next/link'
 import Container from '@/components/Container'
+import PulseSurvey from '@/components/PulseSurvey'
+import OnboardingChecklist from '@/components/OnboardingChecklist'
 import { Building2, Clock, Zap, History, CalendarDays, ShieldCheck, LayoutDashboard } from 'lucide-react'
 
 // Shift type constants
@@ -454,6 +456,17 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Pulse Survey Section */}
+          <div className="mt-8">
+            <PulseSurvey />
+          </div>
+
+          {/* Onboarding Section */}
+          <div className="mt-8">
+            <OnboardingChecklist />
+          </div>
+
           {/* Quick Links Section */}
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-6">

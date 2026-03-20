@@ -14,6 +14,10 @@ class NotificationType(str, enum.Enum):
     LATE_ARRIVAL = "late_arrival"
     AUTO_CHECKOUT = "auto_checkout"
     GENERAL = "general"
+    ONBOARDING_ASSIGNED = "onboarding_assigned"
+    ONBOARDING_REMINDER = "onboarding_reminder"
+    ONBOARDING_NOTE_ADDED = "onboarding_note_added"
+    ONBOARDING_COMPLETED = "onboarding_completed"
 
 
 class NotificationStatus(str, enum.Enum):

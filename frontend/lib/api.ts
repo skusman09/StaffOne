@@ -10,19 +10,20 @@ let lastLoginTime: number | null = null
 const LOGIN_GRACE_PERIOD = 5000 // 5 seconds grace period after login
 
 const getBaseUrl = () => {
-  let url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
-
+  const url = process.env.NEXT_PUBLIC_API_URL
+  if (!url) {
+    throw new Error('NEXT_PUBLIC_API_URL environment variable is not set')
+  }
+  
   // If no protocol is specified, default to https (or http for localhost)
   if (!url.startsWith('http')) {
     if (url.includes('localhost') || url.includes('127.0.0.1')) {
-      url = `http://${url}`
+      return `http://${url}`
     } else {
-      url = `https://${url}`
+      return `https://${url}`
     }
   }
-
-  // Ensure no trailing slash
-  return url.endsWith('/') ? url.slice(0, -1) : url
+  return url
 }
 
 const API_URL = getBaseUrl()
@@ -564,6 +565,114 @@ export const compoffAPI = {
   getBalance: async () => {
     const response = await api.get('/compoff/balance')
     return response.data
+  },
+}
+
+// Pulse API
+export const pulseAPI = {
+  getActive: async () => {
+    const response = await api.get('/pulse/active')
+    return response.data
+  },
+  respond: async (data: { survey_id: number; rating: number; comment?: string }) => {
+    const response = await api.post('/pulse/respond', data)
+    return response.data
+  },
+  admin: {
+    create: async (data: { question: string }) => {
+      const response = await api.post('/pulse/admin/create', data)
+      return response.data
+    },
+    getAll: async () => {
+      const response = await api.get('/pulse/admin/all')
+      return response.data
+    },
+    getResults: async (id: number) => {
+      const response = await api.get(`/pulse/admin/results/${id}`)
+      return response.data
+    },
+    update: async (id: number, data: { question?: string; is_active?: boolean }) => {
+      const response = await api.patch(`/pulse/admin/update/${id}`, data)
+      return response.data
+    },
+    delete: async (id: number) => {
+      const response = await api.delete(`/pulse/admin/delete/${id}`)
+      return response.data
+    },
+  },
+}
+
+// Notification API
+export const notificationAPI = {
+  getUnread: async () => {
+    const response = await api.get('/notifications/unread')
+    return response.data
+  },
+  getAll: async () => {
+    const response = await api.get('/notifications')
+    return response.data
+  },
+  markAsRead: async (notificationId: number) => {
+    const response = await api.patch(`/notifications/${notificationId}/read`)
+    return response.data
+  },
+  markAllAsRead: async () => {
+    const response = await api.patch('/notifications/read-all')
+    return response.data
+  },
+}
+
+// Onboarding API
+export const onboardingAPI = {
+  getMyOnboardings: async () => {
+    const response = await api.get('/onboarding/my')
+    return response.data
+  },
+  getOnboardingDetail: async (id: number) => {
+    const response = await api.get(`/onboarding/my/${id}`)
+    return response.data
+  },
+  updateTaskProgress: async (progressId: number, data: { is_completed: boolean; notes?: string }) => {
+    const response = await api.patch(`/onboarding/tasks/${progressId}`, data)
+    return response.data
+  },
+  admin: {
+    createTemplate: async (data: { title: string; description?: string; tasks: any[] }) => {
+      const response = await api.post('/onboarding/admin/templates', data)
+      return response.data
+    },
+    updateTemplate: async (id: number, data: { title: string; description?: string; tasks: any[] }) => {
+      const response = await api.put(`/onboarding/admin/templates/${id}`, data)
+      return response.data
+    },
+    getTemplates: async () => {
+      const response = await api.get('/onboarding/admin/templates')
+      return response.data
+    },
+    deleteTemplate: async (id: number) => {
+      const response = await api.delete(`/onboarding/admin/templates/${id}`)
+      return response.data
+    },
+    getAssignments: async () => {
+      const response = await api.get('/onboarding/admin/assignments')
+      return response.data
+    },
+    assign: async (data: { user_id: number; workflow_id: number }) => {
+      const response = await api.post('/onboarding/admin/assign', data)
+      return response.data
+    },
+    sendReminder: async (assignmentId: number) => {
+      const response = await api.post(`/onboarding/admin/assignments/${assignmentId}/remind`)
+      return response.data
+    },
+    addNote: async (assignmentId: number, note: string) => {
+      const response = await api.post(`/onboarding/admin/assignments/${assignmentId}/notes`, { note })
+      return response.data
+    },
+    getNotes: async (assignmentId: number) => {
+      const response = await api.get(`/onboarding/admin/assignments/${assignmentId}/notes`)
+      return response.data
+    },
   },
 }
 

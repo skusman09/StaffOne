@@ -8,13 +8,17 @@ from app.models.salary import SalaryConfig, SalaryRecord, SalaryStatus, SystemCo
 from app.models.audit import AuditLog
 from app.models.department import Department
 from app.models.compoff import CompOff, CompOffStatus
+from app.models.pulse import PulseSurvey, PulseResponse
+from app.models.onboarding import OnboardingWorkflow, OnboardingTask, EmployeeOnboarding, EmployeeTaskProgress, OnboardingNote
 
 __all__ = [
     "User", "Role", "CheckInOut", "ShiftType", "Location", 
     "Leave", "LeaveType", "LeaveStatus",
     "Notification", "NotificationPreferences", "NotificationType", "NotificationStatus",
     "Holiday", "SalaryConfig", "SalaryRecord", "SalaryStatus", "SystemConfig",
-    "AuditLog", "Department", "CompOff", "CompOffStatus"
+    "AuditLog", "Department", "CompOff", "CompOffStatus",
+    "PulseSurvey", "PulseResponse",
+    "OnboardingWorkflow", "OnboardingTask", "EmployeeOnboarding", "EmployeeTaskProgress", "OnboardingNote"
 ]
 
 

@@ -11,7 +11,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.core.config import settings
 from app.database import Base
 # Import all models to ensure they're registered with Base.metadata
-from app.models import User, Role, CheckInOut, ShiftType, Location, Leave, Notification, NotificationPreferences
+from app.models import (
+    User, Role, CheckInOut, ShiftType, Location, Leave, 
+    Notification, NotificationPreferences, PulseSurvey, PulseResponse,
+    OnboardingWorkflow, OnboardingTask, EmployeeOnboarding, EmployeeTaskProgress
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
