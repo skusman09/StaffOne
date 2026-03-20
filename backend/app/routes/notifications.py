@@ -67,6 +67,16 @@ def get_notification_count(
     return count
 
 
+@router.get("/unread", response_model=List[NotificationResponse])
+def get_unread_notifications(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get unread notifications only."""
+    notifications = get_user_notifications(db, current_user.id, 0, 50, unread_only=True)
+    return notifications
+
+
 @router.patch("/{notification_id}/read", response_model=NotificationResponse)
 def mark_notification_read(
     notification_id: int,

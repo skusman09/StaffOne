@@ -21,7 +21,9 @@ import {
   Download,
   SearchX,
   Plus,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare,
+  FileText
 } from 'lucide-react'
 
 type RoleFilter = 'all' | 'admin' | 'employee'
@@ -307,6 +309,34 @@ export default function AdminPage() {
                   <dl>
                     <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Leave Requests</dt>
                     <dd className="text-lg font-bold text-rose-400">View All</dd>
+                  </dl>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/surveys" className="bg-slate-900 border border-slate-800 border-l-4 border-l-purple-500 p-6 rounded-xl shadow-lg hover:bg-slate-800 transition-all">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <MessageSquare className="h-6 w-6 text-purple-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Pulse Surveys</dt>
+                    <dd className="text-lg font-bold text-purple-400">Manage</dd>
+                  </dl>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/onboarding" className="bg-slate-900 border border-slate-800 border-l-4 border-l-teal-500 p-6 rounded-xl shadow-lg hover:bg-slate-800 transition-all">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <FileText className="h-6 w-6 text-teal-400" />
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1">Onboarding</dt>
+                    <dd className="text-lg font-bold text-teal-400">Manage</dd>
                   </dl>
                 </div>
               </div>
