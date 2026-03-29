@@ -12,11 +12,20 @@ class PulseResponseCreate(PulseResponseBase):
     survey_id: int
 
 
+class UserPulseResponse(BaseModel):
+    username: str
+    email: str
+
+    class Config:
+        from_attributes = True
+
+
 class PulseResponse(PulseResponseBase):
     id: int
     survey_id: int
     user_id: int
     created_at: datetime
+    user: Optional[UserPulseResponse] = None
 
     class Config:
         from_attributes = True

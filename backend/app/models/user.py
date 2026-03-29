@@ -27,6 +27,8 @@ class User(Base):
     monthly_base_salary = Column(Float, nullable=True)  # Default monthly salary
     avatar_url = Column(String, nullable=True)  # URL to profile picture
     department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)
+    reset_token = Column(String, index=True, nullable=True)
+    reset_token_expires = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

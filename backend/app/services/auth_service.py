@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from typing import Optional
 from fastapi import HTTPException, status
 from app.models.user import User, Role
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token
@@ -34,6 +35,12 @@ def create_user(db: Session, user_create: UserCreate) -> User:
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def is_username_available(db: Session, username: str) -> bool:
+    """Check if a username is available."""
+    user = db.query(User).filter(User.username == username).first()
+    return user is None
 
 
 def authenticate_user(db: Session, username: str, password: str) -> User:
@@ -138,3 +145,62 @@ def change_user_password(db: Session, user: User, current_password: str, new_pas
     db.commit()
     db.refresh(user)
     return user
+
+
+def create_reset_token(db: Session, email: str) -> Optional[str]:
+    """Generate and store a password reset token for a user."""
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return None
+    
+    import secrets
+    from datetime import datetime, timedelta
+    
+    # Generate a 6-digit numeric OTP
+    otp = ''.join([secrets.choice('0123456789') for _ in range(6)])
+    user.reset_token = otp
+    user.reset_token_expires = datetime.utcnow() + timedelta(minutes=10) # OTP valid for 10 mins
+    
+    db.commit()
+    return otp
+
+
+def reset_password_with_token(db: Session, token: str, new_password: str) -> bool:
+    """Reset user password using a valid reset token."""
+    from datetime import datetime
+    
+    user = db.query(User).filter(
+        User.reset_token == token,
+        User.reset_token_expires > datetime.utcnow()
+    ).first()
+    
+    if not user:
+        return False
+    
+    # Update password and clear token
+    # Check if new password is same as old password
+    if verify_password(new_password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password cannot be the same as your old password"
+        )
+        
+    user.hashed_password = get_password_hash(new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    
+    db.commit()
+    return True
+
+
+def verify_otp(db: Session, email: str, otp: str) -> bool:
+    """Verify if the OTP is valid for the given email."""
+    from datetime import datetime
+    
+    user = db.query(User).filter(
+        User.email == email,
+        User.reset_token == otp,
+        User.reset_token_expires > datetime.utcnow()
+    ).first()
+    
+    return user is not None

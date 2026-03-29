@@ -180,6 +180,22 @@ export const authAPI = {
     const response = await api.put('/auth/password', data)
     return response.data
   },
+  checkUsername: async (username: string) => {
+    const response = await api.get(`/auth/check-username/${username}`)
+    return response.data
+  },
+  forgotPassword: async (email: string) => {
+    const response = await api.post('/auth/forgot-password', { email })
+    return response.data
+  },
+  verifyOTP: async (email: string, otp: string) => {
+    const response = await api.post('/auth/verify-otp', { email, otp })
+    return response.data
+  },
+  resetPassword: async (data: any) => {
+    const response = await api.post('/auth/reset-password', data)
+    return response.data
+  },
   uploadAvatar: async (file: File) => {
     const formData = new FormData()
     formData.append('file', file)

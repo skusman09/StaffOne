@@ -4,7 +4,7 @@ import uuid
 import shutil
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse, ProfileUpdate, PasswordChange
+from app.schemas.auth import UserCreate, UserLogin, Token, UserResponse, ProfileUpdate, PasswordChange, ForgotPasswordRequest, ResetPasswordConfirm, OTPVerify
 from app.services.auth_service import create_user, authenticate_user, create_tokens_for_user, update_user_profile, change_user_password
 from app.utils.dependencies import get_current_user
 from app.models.user import User
@@ -17,6 +17,14 @@ def register(user_create: UserCreate, db: Session = Depends(get_db)):
     """Register a new user."""
     user = create_user(db, user_create)
     return user
+
+
+@router.get("/check-username/{username}")
+def check_username(username: str, db: Session = Depends(get_db)):
+    """Check if a username is available."""
+    from app.services.auth_service import is_username_available
+    available = is_username_available(db, username)
+    return {"available": available}
 
 
 @router.post("/login", response_model=Token)
@@ -128,3 +136,50 @@ async def upload_avatar(
         user=current_user,
         avatar_url=avatar_url
     )
+
+
+@router.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    """Request a password reset via OTP."""
+    from app.services.auth_service import create_reset_token
+    from app.services.notification_service import send_email
+    
+    otp = create_reset_token(db, request.email)
+    if otp:
+        subject = "Your Password Reset OTP"
+        message = f"Your 6-digit verification code is: {otp}\n\nThis code is valid for 10 minutes. Do not share it with anyone."
+        
+        send_email(request.email, subject, message)
+    
+    # Always return success to avoid email enumeration
+    return {"message": "If an account exists with this email, a 6-digit code has been sent."}
+
+
+@router.post("/verify-otp")
+def verify_otp_endpoint(request: OTPVerify, db: Session = Depends(get_db)):
+    """Verify the 6-digit OTP."""
+    from app.services.auth_service import verify_otp
+    
+    is_valid = verify_otp(db, request.email, request.otp)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code"
+        )
+    
+    return {"message": "Verification successful."}
+
+
+@router.post("/reset-password")
+def reset_password_confirm(request: ResetPasswordConfirm, db: Session = Depends(get_db)):
+    """Complete password reset using the 6-digit code (token)."""
+    from app.services.auth_service import reset_password_with_token
+    
+    success = reset_password_with_token(db, request.token, request.new_password)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code"
+        )
+    
+    return {"message": "Password has been reset successfully."}

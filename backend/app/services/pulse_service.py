@@ -74,6 +74,12 @@ def get_survey_results(db: Session, survey_id: int):
         func.avg(PulseResponse.rating).label("average")
     ).filter(PulseResponse.survey_id == survey_id).first()
 
+    responses = []
+    for r in survey.responses:
+        # Load user to ensure it's available for pydantic
+        user_info = r.user
+        responses.append(r)
+
     return {
         "id": survey.id,
         "question": survey.question,
@@ -82,7 +88,7 @@ def get_survey_results(db: Session, survey_id: int):
         "updated_at": survey.updated_at,
         "response_count": stats.count or 0,
         "average_rating": float(stats.average or 0),
-        "responses": survey.responses
+        "responses": responses
     }
 
 

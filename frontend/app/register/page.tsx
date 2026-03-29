@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMutation } from '@tanstack/react-query'
 import { authAPI } from '@/lib/api'
 import { toast } from '@/lib/toast'
 import { validateEmail, validateUsername, validatePassword, getPasswordStrength } from '@/lib/validation'
 import Link from 'next/link'
-import { User, Mail, Lock, UserPlus, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { User, Mail, Lock, UserPlus, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -20,6 +20,30 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState<{ email?: string; username?: string; password?: string }>({})
   const [passwordStrength, setPasswordStrength] = useState<{ strength: 'weak' | 'medium' | 'strong'; score: number } | null>(null)
   const [showPassword, setShowPassword] = useState(false)
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState<boolean | null>(null)
+
+  // Debounced username check
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+    if (formData.username && formData.username.length >= 3) {
+      setIsCheckingUsername(true)
+      timeoutId = setTimeout(async () => {
+        try {
+          const result = await authAPI.checkUsername(formData.username)
+          setIsUsernameAvailable(result.available)
+        } catch (error) {
+          console.error('Error checking username:', error)
+        } finally {
+          setIsCheckingUsername(false)
+        }
+      }, 500)
+    } else {
+      setIsUsernameAvailable(null)
+      setIsCheckingUsername(false)
+    }
+    return () => clearTimeout(timeoutId)
+  }, [formData.username])
 
   const registerMutation = useMutation({
     mutationFn: authAPI.register,
@@ -41,6 +65,11 @@ export default function RegisterPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
+
+    if (isUsernameAvailable === false) {
+      setErrors({ username: 'This username is already taken' })
+      return
+    }
 
     // Validate all fields
     const emailValidation = validateEmail(formData.email)
@@ -73,6 +102,11 @@ export default function RegisterPage() {
       ...formData,
       [name]: value,
     })
+
+    // Reset username availability when user types
+    if (name === 'username') {
+      setIsUsernameAvailable(null)
+    }
 
     // Clear error for this field
     if (errors[name as keyof typeof errors]) {
@@ -157,18 +191,35 @@ export default function RegisterPage() {
                   name="username"
                   type="text"
                   required
-                  className={`block w-full pl-10 pr-3 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base ${errors.username ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
+                  className={`block w-full pl-10 pr-10 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-base ${errors.username || isUsernameAvailable === false ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600'
                     }`}
                   placeholder="Choose a username"
                   value={formData.username}
                   onChange={handleChange}
-                  aria-invalid={!!errors.username}
-                  aria-describedby={errors.username ? 'username-error' : undefined}
+                  aria-invalid={!!errors.username || isUsernameAvailable === false}
+                  aria-describedby={errors.username ? 'username-error' : isUsernameAvailable === false ? 'username-taken-error' : undefined}
                 />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  {isCheckingUsername && <Loader2 className="h-4 w-4 text-indigo-500 animate-spin" />}
+                  {isUsernameAvailable === true && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                  {isUsernameAvailable === false && <AlertCircle className="h-4 w-4 text-red-500" />}
+                </div>
               </div>
               {errors.username && (
                 <p id="username-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
                   {errors.username}
+                </p>
+              )}
+              {isUsernameAvailable === false && !errors.username && (
+                <p id="username-taken-error" className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center" role="alert">
+                  <AlertCircle className="w-3.5 h-3.5 mr-1" />
+                  This username is already taken
+                </p>
+              )}
+              {isUsernameAvailable === true && !errors.username && (
+                <p id="username-available-success" className="mt-1 text-sm text-green-600 dark:text-green-400 flex items-center" role="alert">
+                  <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+                  Username is available
                 </p>
               )}
             </div>
@@ -267,7 +318,7 @@ export default function RegisterPage() {
             <div>
               <button
                 type="submit"
-                disabled={registerMutation.isPending}
+                disabled={registerMutation.isPending || isCheckingUsername || isUsernameAvailable === false}
                 className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600 dark:hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 {registerMutation.isPending ? (

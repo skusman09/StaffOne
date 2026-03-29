@@ -65,3 +65,20 @@ class PasswordChange(BaseModel):
     """Schema for changing password."""
     current_password: str
     new_password: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Schema for requesting a password reset."""
+    email: EmailStr
+
+
+class ResetPasswordConfirm(BaseModel):
+    """Schema for completing a password reset."""
+    token: str
+    new_password: str
+
+
+class OTPVerify(BaseModel):
+    """Schema for verifying an OTP."""
+    email: EmailStr
+    otp: str

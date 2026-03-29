@@ -8,7 +8,7 @@ import { SessionManager } from '@/lib/session'
 import { toast } from '@/lib/toast'
 import { validateUsername } from '@/lib/validation'
 import Link from 'next/link'
-import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { User, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ username?: string; password?: string }>({})
+  const [globalError, setGlobalError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const loginMutation = useMutation({
@@ -54,6 +55,7 @@ export default function LoginPage() {
       const errorMessage = err.response?.data?.detail ||
         err.message ||
         'Unable to connect to server. Please make sure the backend is running.'
+      setGlobalError(errorMessage)
       toast.error(errorMessage)
     },
   })
@@ -61,6 +63,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErrors({})
+    setGlobalError('')
 
     // Validate inputs
     const usernameValidation = validateUsername(username)
@@ -192,7 +195,19 @@ export default function LoginPage() {
                   {errors.password}
                 </p>
               )}
+              <div className="flex items-center justify-end mt-2">
+                <Link href="/forgot-password" title="Forgot Password" className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-colors duration-200">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
+
+            {globalError && (
+              <div className="flex items-center gap-3 p-3 bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl text-sm text-red-600 dark:text-red-400 mb-4 transition-all duration-300 ease-in-out">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <p className="font-medium">{globalError}</p>
+              </div>
+            )}
 
             {/* Submit Button */}
             <div>
