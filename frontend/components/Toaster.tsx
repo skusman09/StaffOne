@@ -9,7 +9,7 @@ export function Toaster() {
 
   useEffect(() => {
     const unsubscribe = toast.subscribe((newToast) => {
-      setToasts(toast.getToasts())
+      setToasts([...toast.getToasts()])
     })
 
     // Initial load

@@ -17,28 +17,48 @@ class ToastManager {
 
   private notify() {
     this.listeners.forEach((callback) => {
-      callback(this.toasts[this.toasts.length - 1])
+      callback(this.toasts[this.toasts.length - 1] || null)
     })
   }
 
+  dismissAll() {
+    this.toasts = []
+    this.notify()
+  }
+
   show(message: string, type: ToastType = 'info', duration?: number) {
+    // Robust duplicate prevention
+    if (this.toasts.some(t => t.message === message)) {
+      this.toasts = this.toasts.filter(t => t.message !== message)
+    }
+
     const toast: Toast = {
       id: Math.random().toString(36).substr(2, 9),
       message,
       type,
       duration,
     }
+    
     this.toasts.push(toast)
+    
+    // Safety limit to prevent UX clutter
+    if (this.toasts.length > 4) {
+      this.toasts.shift()
+    }
+
     this.notify()
     return toast.id
   }
 
   success(message: string, duration?: number) {
+    // Clear all error toasts when a success occurs to signal resolution
+    this.toasts = this.toasts.filter(t => t.type !== 'error')
     return this.show(message, 'success', duration)
   }
 
   error(message: string, duration?: number) {
-    return this.show(message, 'error', duration || 7000)
+    // Error duration is slightly longer for better readability
+    return this.show(message, 'error', duration || 6000)
   }
 
   info(message: string, duration?: number) {
