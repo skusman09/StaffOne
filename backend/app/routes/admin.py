@@ -1,17 +1,22 @@
+"""Admin routes — API handlers for admin operations."""
+import logging
 from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from app.database import get_db
+
 from app.schemas.auth import UserResponse, RoleUpdate
 from app.schemas.checkinout import CheckInOutResponse, AdminManualCheckout
 from app.models.user import User, Role
-from app.services.attendance_service import (
-    get_all_attendance,
-    admin_checkout_user,
-    auto_checkout_pending_records
-)
-from app.utils.dependencies import get_current_admin_user
+from app.models.checkinout import CheckInOut
+from app.database import get_db
 
+from app.services.attendance_service import AttendanceService
+from app.container import get_attendance_service
+from app.authorization.dependencies import require, handle_policy_violation
+from app.authorization.permissions import Permission
+from app.authorization import policies
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
@@ -19,10 +24,10 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 def get_all_users(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
-    current_user: User = Depends(get_current_admin_user),
+    current_user: User = Depends(require(Permission.VIEW_ANY_USER)),
     db: Session = Depends(get_db)
 ):
-    """Get all users (admin only)."""
+    """Get all users."""
     users = db.query(User).offset(skip).limit(limit).all()
     return users
 
@@ -31,29 +36,22 @@ def get_all_users(
 def update_user_role(
     user_id: int,
     role_update: RoleUpdate,
-    current_user: User = Depends(get_current_admin_user),
+    current_user: User = Depends(require(Permission.UPDATE_USER_ROLE)),
     db: Session = Depends(get_db)
 ):
-    """Update a user's role (admin only)."""
+    """Update a user's role."""
+    if not policies.can_modify_user_role(current_user, user_id, role_update.role):
+        raise handle_policy_violation(
+            policies.PolicyViolation("Cannot modify role or demote self", status_code=400)
+        )
+
     user = db.query(User).filter(User.id == user_id).first()
-    
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
-    # Prevent demoting yourself
-    if user.id == current_user.id and role_update.role != Role.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot demote yourself from admin role"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     user.role = role_update.role
     db.commit()
     db.refresh(user)
-    
     return user
 
 
@@ -62,69 +60,48 @@ def get_all_attendance_records(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     user_id: Optional[int] = Query(None, description="Filter by user ID"),
-    pending_only: bool = Query(False, description="Show only pending (unclosed) records"),
-    current_user: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db)
+    pending_only: bool = Query(False, description="Show only pending records"),
+    current_user: User = Depends(require(Permission.VIEW_ANY_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Get all attendance records (admin only).
-    
-    Use pending_only=true to see records that haven't been checked out yet.
-    """
-    records = get_all_attendance(db, skip, limit, user_id, pending_only)
-    return records
+    """Get all attendance records."""
+    return service.get_all_attendance(skip, limit, user_id, pending_only)
 
 
 @router.patch("/attendance/{record_id}/checkout", response_model=CheckInOutResponse)
 def admin_manual_checkout(
     record_id: int,
     checkout_data: AdminManualCheckout,
-    current_user: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require(Permission.MANAGE_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Manually checkout an attendance record (admin only).
-    
-    Use this when an employee forgot to check out.
-    Optionally specify a checkout_time, otherwise uses current time.
-    """
-    record = admin_checkout_user(db, record_id, current_user, checkout_data)
-    return record
+    """Manually checkout an attendance record."""
+    return service.admin_checkout_user(record_id, current_user, checkout_data)
 
 
 @router.post("/attendance/auto-checkout", response_model=List[CheckInOutResponse])
 def trigger_auto_checkout(
-    current_user: User = Depends(get_current_admin_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require(Permission.MANAGE_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Trigger auto-checkout for all pending records exceeding the time limit.
-    
-    Closes all attendance records that have been open longer than AUTO_CHECKOUT_HOURS.
-    Returns list of records that were auto-closed.
-    """
-    closed_records = auto_checkout_pending_records(db)
-    return closed_records
+    """Trigger auto-checkout for all pending records exceeding the time limit."""
+    return service.auto_checkout_pending_records()
 
 
 @router.patch("/attendance/{record_id}/notes", response_model=CheckInOutResponse)
 def update_attendance_notes(
     record_id: int,
     admin_notes: str = Query(..., description="Admin notes to add"),
-    current_user: User = Depends(get_current_admin_user),
+    current_user: User = Depends(require(Permission.MANAGE_ATTENDANCE)),
     db: Session = Depends(get_db)
 ):
-    """Add or update admin notes on an attendance record."""
-    from app.models.checkinout import CheckInOut
-    
+    """Add or update admin notes on an attendance record. (TODO: move to service logic)"""
     record = db.query(CheckInOut).filter(CheckInOut.id == record_id).first()
-    
     if not record:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Attendance record not found"
-        )
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Attendance record not found")
+
     record.admin_notes = admin_notes
     record.modified_by_admin_id = current_user.id
     db.commit()
     db.refresh(record)
-    
     return record

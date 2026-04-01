@@ -1,28 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+"""Attendance routes — check-in/out, history, and statistics."""
+from fastapi import APIRouter, Depends, Query, status
 from typing import List, Optional
 from datetime import datetime, timedelta, date
-from app.database import get_db
+
 from app.schemas.checkinout import (
-    CheckInCreate,
-    CheckOutCreate,
-    CheckInOutResponse,
-    CheckInOutTodayResponse,
-    WorkingHoursSummary,
-    MonthlyStatistics
+    CheckInCreate, CheckOutCreate, CheckInOutResponse,
+    CheckInOutTodayResponse, WorkingHoursSummary, MonthlyStatistics
 )
-from app.services.attendance_service import (
-    check_in_user,
-    check_out_user,
-    get_today_checkinout,
-    get_active_shift,
-    get_user_attendance_history,
-    get_working_hours_summary,
-    get_monthly_statistics
-)
-from app.utils.dependencies import get_current_user
+from app.services.attendance_service import AttendanceService
+from app.container import get_attendance_service
+from app.authorization.dependencies import require
+from app.authorization.permissions import Permission
 from app.models.user import User
-from app.models.checkinout import ShiftType
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 
@@ -30,53 +19,36 @@ router = APIRouter(prefix="/attendance", tags=["attendance"])
 @router.post("/check-in", response_model=CheckInOutResponse, status_code=status.HTTP_201_CREATED)
 def check_in(
     check_in_data: CheckInCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Check in for the day.
-    
-    Creates a new attendance record. User must not have an active (unclosed) shift.
-    Supports shift types: REGULAR, BREAK, OVERTIME.
-    """
-    checkinout = check_in_user(db, current_user, check_in_data)
-    return checkinout
+    """Check in for the day."""
+    return service.check_in_user(current_user, check_in_data)
 
 
 @router.post("/check-out", response_model=CheckInOutResponse)
 def check_out(
     check_out_data: CheckOutCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Check out for the day.
-    
-    Closes the active shift and calculates hours worked.
-    Works even if checkout is on a different day (for night shifts).
-    """
-    checkinout = check_out_user(db, current_user, check_out_data)
-    return checkinout
+    """Check out for the day."""
+    return service.check_out_user(current_user, check_out_data)
 
 
 @router.get("/my-today", response_model=CheckInOutTodayResponse)
 def get_my_today_status(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Get today's check-in/out status for current user.
-    
-    Uses user's timezone for proper 'today' calculation.
-    Also checks for any active (unclosed) shifts.
-    """
-    today_record = get_today_checkinout(db, current_user)
-    active_shift = get_active_shift(db, current_user)
-    
-    # Determine if user can check in/out
+    """Get today's check-in/out status for current user."""
+    today_record = service.get_today_checkinout(current_user)
+    active_shift = service.get_active_shift(current_user)
+
     can_check_in = active_shift is None
     can_check_out = active_shift is not None
-    
-    # Use active shift for display if exists
     display_record = active_shift or today_record
-    
+
     return CheckInOutTodayResponse(
         id=display_record.id if display_record else None,
         check_in_time=display_record.check_in_time if display_record else None,
@@ -93,58 +65,37 @@ def get_my_today_status(
 def get_my_history(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
-    start_date: Optional[date] = Query(None, description="Filter records from this date (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="Filter records until this date (YYYY-MM-DD)"),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    start_date: Optional[date] = Query(None, description="Filter from date"),
+    end_date: Optional[date] = Query(None, description="Filter until date"),
+    current_user: User = Depends(require(Permission.VIEW_OWN_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Get attendance history for current user with optional date range filtering."""
-    # Convert date to datetime for filtering
+    """Get attendance history for current user."""
     start_datetime = datetime.combine(start_date, datetime.min.time()) if start_date else None
     end_datetime = datetime.combine(end_date, datetime.max.time()) if end_date else None
-    
-    history = get_user_attendance_history(
-        db, current_user.id, skip, limit, 
-        start_date=start_datetime, 
-        end_date=end_datetime
-    )
-    return history
+    return service.get_user_attendance_history(current_user.id, skip, limit, start_datetime, end_datetime)
 
 
 @router.get("/working-hours", response_model=WorkingHoursSummary)
 def get_my_working_hours(
     days: int = Query(30, ge=1, le=365, description="Number of days to calculate"),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
     """Get working hours summary for the specified number of past days."""
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
-    summary = get_working_hours_summary(db, current_user.id, start_date, end_date)
-    
-    return WorkingHoursSummary(
-        date=f"Last {days} days",
-        **summary
-    )
+    summary = service.get_working_hours_summary(current_user.id, start_date, end_date)
+    return WorkingHoursSummary(date=f"Last {days} days", **summary)
 
 
 @router.get("/monthly-stats", response_model=MonthlyStatistics)
 def get_my_monthly_stats(
-    year: int = Query(..., ge=2020, le=2100, description="Year (e.g., 2024)"),
-    month: int = Query(..., ge=1, le=12, description="Month (1-12)"),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    year: int = Query(..., ge=2020, le=2100),
+    month: int = Query(..., ge=1, le=12),
+    current_user: User = Depends(require(Permission.VIEW_OWN_ATTENDANCE)),
+    service: AttendanceService = Depends(get_attendance_service)
 ):
-    """Get monthly attendance statistics for current user.
-    
-    Returns comprehensive monthly stats including:
-    - Total days in month and working days
-    - Days worked and absences
-    - Total, regular, overtime, and break hours
-    - Average hours per day
-    - Attendance percentage
-    """
-    stats = get_monthly_statistics(db, current_user.id, year, month)
+    """Get monthly attendance statistics for current user."""
+    stats = service.get_monthly_statistics(current_user.id, year, month)
     return MonthlyStatistics(**stats)
-

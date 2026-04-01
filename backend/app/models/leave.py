@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Enum as SQLEnum, Text
+from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey, Enum as SQLEnum, Text, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime, date
 import enum
@@ -28,6 +28,9 @@ class LeaveStatus(str, enum.Enum):
 class Leave(Base):
     """Leave request model."""
     __tablename__ = "leaves"
+    __table_args__ = (
+        Index("ix_leaves_user_status", "user_id", "status"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)

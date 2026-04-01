@@ -1,207 +1,171 @@
-from sqlalchemy.orm import Session, joinedload
+"""
+Leave service — business logic for leave management.
+
+Architecture:
+- Accepts ILeaveRepository via constructor (DIP)
+- Delegates validation to domain/leave_policy (pure functions)
+- Uses @transactional for consistent transaction management
+"""
+import logging
+from typing import Optional, List
+from datetime import datetime, date
+
+from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+
 from app.models.leave import Leave, LeaveType, LeaveStatus
 from app.models.user import User
 from app.schemas.leave import LeaveCreate, LeaveApproval
-from datetime import datetime, date
-from typing import List, Optional
+from app.core.transaction import transactional
+from app.interfaces.repositories import ILeaveRepository
+from app.repositories.leave_repo import LeaveRepository
+from app.domain.leave_policy import validate_cancellation, validate_status_transition
+
+logger = logging.getLogger(__name__)
 
 
-def create_leave_request(db: Session, user: User, leave_data: LeaveCreate) -> Leave:
-    """Create a new leave request."""
-    # Check for overlapping leave requests
-    existing = db.query(Leave).filter(
-        Leave.user_id == user.id,
-        Leave.status.in_([LeaveStatus.PENDING, LeaveStatus.APPROVED]),
-        Leave.start_date <= leave_data.end_date,
-        Leave.end_date >= leave_data.start_date
-    ).first()
-    
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"You already have a leave request from {existing.start_date} to {existing.end_date}"
+class LeaveService:
+    """Handles all leave-related business logic."""
+
+    def __init__(self, db: Session, repo: ILeaveRepository = None):
+        self.db = db
+        self.repo = repo or LeaveRepository(db)
+
+    @transactional
+    def create_leave_request(self, user: User, leave_data: LeaveCreate) -> Leave:
+        """Create a new leave request with overlap validation."""
+        existing = self.repo.get_overlapping(user.id, leave_data.start_date, leave_data.end_date)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"You already have a leave request from {existing.start_date} to {existing.end_date}"
+            )
+
+        leave = Leave(
+            user_id=user.id,
+            leave_type=leave_data.leave_type,
+            start_date=leave_data.start_date,
+            end_date=leave_data.end_date,
+            reason=leave_data.reason
         )
-    
-    leave = Leave(
-        user_id=user.id,
-        leave_type=leave_data.leave_type,
-        start_date=leave_data.start_date,
-        end_date=leave_data.end_date,
-        reason=leave_data.reason
-    )
-    
-    db.add(leave)
-    db.commit()
-    db.refresh(leave)
-    return leave
 
+        self.repo.add(leave)
+        self.db.flush()
+        self.db.refresh(leave)
+        return leave
 
-def get_leave(db: Session, leave_id: int) -> Optional[Leave]:
-    """Get a leave request by ID."""
-    return db.query(Leave).filter(Leave.id == leave_id).first()
+    def get_leave(self, leave_id: int) -> Optional[Leave]:
+        """Get a leave request by ID."""
+        return self.repo.get_by_id(leave_id)
 
+    def get_user_leaves(
+        self, user_id: int, skip: int = 0, limit: int = 100,
+        status_filter: Optional[LeaveStatus] = None
+    ) -> List[Leave]:
+        """Get leave requests for a user."""
+        return self.repo.get_user_leaves(user_id, skip, limit, status_filter)
 
-def get_user_leaves(
-    db: Session,
-    user_id: int,
-    skip: int = 0,
-    limit: int = 100,
-    status_filter: Optional[LeaveStatus] = None
-) -> List[Leave]:
-    """Get leave requests for a user."""
-    query = db.query(Leave).filter(Leave.user_id == user_id)
-    
-    if status_filter:
-        query = query.filter(Leave.status == status_filter)
-    
-    return query.order_by(Leave.start_date.desc()).offset(skip).limit(limit).all()
+    def get_all_leaves(
+        self, skip: int = 0, limit: int = 100,
+        status_filter: Optional[LeaveStatus] = None,
+        user_id: Optional[int] = None
+    ) -> List[Leave]:
+        """Get all leave requests (admin)."""
+        return self.repo.get_all_leaves(skip, limit, status_filter, user_id)
 
+    @transactional
+    def approve_leave(self, leave_id: int, admin_user: User, approval_data: LeaveApproval) -> Leave:
+        """Approve a leave request."""
+        leave = self.repo.get_by_id(leave_id)
+        if not leave:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Leave request not found"
+            )
 
-def get_all_leaves(
-    db: Session,
-    skip: int = 0,
-    limit: int = 100,
-    status_filter: Optional[LeaveStatus] = None,
-    user_id: Optional[int] = None
-) -> List[Leave]:
-    """Get all leave requests (admin only)."""
-    query = db.query(Leave).options(joinedload(Leave.user))
-    
-    if status_filter:
-        query = query.filter(Leave.status == status_filter)
-    
-    if user_id:
-        query = query.filter(Leave.user_id == user_id)
-    
-    return query.order_by(Leave.created_at.desc()).offset(skip).limit(limit).all()
+        # Domain validation: check status transition
+        if not validate_status_transition(leave.status.value, "approved"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot approve leave with status {leave.status.value}"
+            )
 
+        leave.status = LeaveStatus.APPROVED
+        leave.approved_by_id = admin_user.id
+        leave.approved_at = datetime.utcnow()
+        leave.admin_remarks = approval_data.admin_remarks
+        return leave
 
-def approve_leave(
-    db: Session,
-    leave_id: int,
-    admin_user: User,
-    approval_data: LeaveApproval
-) -> Leave:
-    """Approve a leave request."""
-    leave = get_leave(db, leave_id)
-    
-    if not leave:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Leave request not found"
+    @transactional
+    def reject_leave(self, leave_id: int, admin_user: User, approval_data: LeaveApproval) -> Leave:
+        """Reject a leave request."""
+        leave = self.repo.get_by_id(leave_id)
+        if not leave:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Leave request not found"
+            )
+
+        if not validate_status_transition(leave.status.value, "rejected"):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot reject leave with status {leave.status.value}"
+            )
+
+        leave.status = LeaveStatus.REJECTED
+        leave.approved_by_id = admin_user.id
+        leave.approved_at = datetime.utcnow()
+        leave.admin_remarks = approval_data.admin_remarks
+        return leave
+
+    @transactional
+    def cancel_leave(self, leave_id: int, user: User) -> Leave:
+        """Cancel a leave request (by the user who created it)."""
+        leave = self.repo.get_by_id(leave_id)
+        if not leave:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Leave request not found"
+            )
+
+        # Domain validation
+        cancel_check = validate_cancellation(
+            leave_status=leave.status.value,
+            leave_start_date=leave.start_date,
+            leave_user_id=leave.user_id,
+            requesting_user_id=user.id,
         )
-    
-    if leave.status != LeaveStatus.PENDING:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot approve leave with status {leave.status.value}"
-        )
-    
-    leave.status = LeaveStatus.APPROVED
-    leave.approved_by_id = admin_user.id
-    leave.approved_at = datetime.utcnow()
-    leave.admin_remarks = approval_data.admin_remarks
-    
-    db.commit()
-    db.refresh(leave)
-    return leave
+
+        if not cancel_check.can_cancel:
+            status_code = (
+                status.HTTP_403_FORBIDDEN
+                if "only cancel your own" in (cancel_check.reason or "")
+                else status.HTTP_400_BAD_REQUEST
+            )
+            raise HTTPException(status_code=status_code, detail=cancel_check.reason)
+
+        leave.status = LeaveStatus.CANCELLED
+        return leave
+
+    def get_leave_stats(self, user_id: int) -> dict:
+        """Get leave statistics for a user for the current year."""
+        current_year = datetime.now().year
+        year_start = date(current_year, 1, 1)
+        year_end = date(current_year, 12, 31)
+
+        all_leaves = self.repo.get_all_for_user(user_id)
+        approved_this_year = self.repo.get_approved_in_range(user_id, year_start, year_end)
+        pending = [l for l in all_leaves if l.status == LeaveStatus.PENDING]
+        total_days = sum(l.days_count for l in approved_this_year)
+
+        return {
+            "total_leaves_taken": len(approved_this_year),
+            "total_days_taken": total_days,
+            "pending_requests": len(pending),
+            "approved_this_year": len(approved_this_year),
+            "balances": []
+        }
 
 
-def reject_leave(
-    db: Session,
-    leave_id: int,
-    admin_user: User,
-    approval_data: LeaveApproval
-) -> Leave:
-    """Reject a leave request."""
-    leave = get_leave(db, leave_id)
-    
-    if not leave:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Leave request not found"
-        )
-    
-    if leave.status != LeaveStatus.PENDING:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot reject leave with status {leave.status.value}"
-        )
-    
-    leave.status = LeaveStatus.REJECTED
-    leave.approved_by_id = admin_user.id
-    leave.approved_at = datetime.utcnow()
-    leave.admin_remarks = approval_data.admin_remarks
-    
-    db.commit()
-    db.refresh(leave)
-    return leave
 
 
-def cancel_leave(db: Session, leave_id: int, user: User) -> Leave:
-    """Cancel a leave request (by the user who created it)."""
-    leave = get_leave(db, leave_id)
-    
-    if not leave:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Leave request not found"
-        )
-    
-    if leave.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only cancel your own leave requests"
-        )
-    
-    if leave.status not in [LeaveStatus.PENDING, LeaveStatus.APPROVED]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Cannot cancel leave with status {leave.status.value}"
-        )
-    
-    # Don't allow cancelling if leave has already started
-    if leave.start_date <= date.today():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot cancel leave that has already started"
-        )
-    
-    leave.status = LeaveStatus.CANCELLED
-    
-    db.commit()
-    db.refresh(leave)
-    return leave
-
-
-def get_leave_stats(db: Session, user_id: int) -> dict:
-    """Get leave statistics for a user."""
-    current_year = datetime.now().year
-    year_start = date(current_year, 1, 1)
-    year_end = date(current_year, 12, 31)
-    
-    # All leaves for the user
-    all_leaves = db.query(Leave).filter(Leave.user_id == user_id).all()
-    
-    # This year's approved leaves
-    approved_this_year = db.query(Leave).filter(
-        Leave.user_id == user_id,
-        Leave.status == LeaveStatus.APPROVED,
-        Leave.start_date >= year_start,
-        Leave.end_date <= year_end
-    ).all()
-    
-    # Pending leaves
-    pending = [l for l in all_leaves if l.status == LeaveStatus.PENDING]
-    
-    # Calculate totals
-    total_days = sum(l.days_count for l in approved_this_year)
-    
-    return {
-        "total_leaves_taken": len(approved_this_year),
-        "total_days_taken": total_days,
-        "pending_requests": len(pending),
-        "approved_this_year": len(approved_this_year),
-        "balances": []  # Leave balance would need a separate configuration for quotas
-    }

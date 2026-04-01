@@ -58,3 +58,6 @@ Thumbs.db
 # Alembic
 alembic/versions/*.pyc
 
+
+# Cloudflare Pages
+.vercel/

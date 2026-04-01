@@ -1,49 +1,154 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+"""
+StaffOne API — Main application entry point.
+
+Uses FastAPI lifespan for startup/shutdown hooks.
+Registers:
+- Global exception handler
+- Request logging middleware
+- Rate limiting (slowapi)
+- Structured logging
+- API versioning under /api/v1
+"""
 import os
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, APIRouter, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 from app.core.config import settings
-from app.routes import auth, attendance, admin, locations, leaves, notifications, analytics, reports, holidays, payroll, config, audit, scheduler, department, compoff, pulse, onboarding
-from app.database import Base, engine
+from app.core.observability import ObservabilityMiddleware, get_metrics_snapshot
+from app.core.exception_handlers import unhandled_exception_handler, validation_exception_handler
+from app.core.rate_limiter import limiter
+from app.database import Base, engine, check_db_connectivity
+from app.routes import (
+    auth, attendance, admin, locations, leaves, notifications,
+    analytics, reports, holidays, payroll, config, audit,
+    scheduler, department, compoff, pulse, onboarding
+)
 
-# Create database tables on startup (only if using SQLite or for development)
-# For production with PostgreSQL, use Alembic migrations instead
-# This ensures tables exist for development/testing
-try:
-    Base.metadata.create_all(bind=engine)
-except Exception as e:
-    # If tables already exist or migration system is used, this is fine
-    # Log but don't fail startup
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.warning(f"Could not create tables automatically: {e}")
-    logger.info("If using Alembic migrations, this is expected. Run 'alembic upgrade head' to create tables.")
+# ── Structured logging setup ───────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+logger = logging.getLogger(__name__)
 
-# Create FastAPI app
+
+# ── Lifespan (replaces deprecated @app.on_event) ──────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup and shutdown lifecycle management."""
+    # ── 1. Database tables (dev only; production uses Alembic) ─────
+    if not settings.is_production:
+        try:
+            Base.metadata.create_all(bind=engine)
+        except Exception as e:
+            logger.warning(f"Could not create tables automatically: {e}")
+    else:
+        logger.info("Production mode — skipping auto table creation (use Alembic).")
+
+    # ── 2. Redis + Job Queue ──────────────────────────────────────
+    try:
+        from app.core.job_queue import init_job_queue
+        init_job_queue()
+        logger.info("Job queue initialized")
+    except Exception as e:
+        if settings.is_production:
+            logger.critical(f"FATAL: Job queue initialization failed: {e}")
+            raise
+        logger.warning(f"Job queue init failed (non-fatal in dev): {e}")
+
+    # ── 3. APScheduler (legacy — still needed until full RQ migration) ─
+    try:
+        from app.core.scheduler import init_scheduler
+        init_scheduler()
+        logger.info("Background scheduler initialized")
+    except Exception as e:
+        logger.warning(f"Could not initialize scheduler: {e}")
+
+    logger.info(f"StaffOne API started [env={settings.ENVIRONMENT}]")
+    yield
+
+    # ── Shutdown ──────────────────────────────────────────────────
+    try:
+        from app.core.scheduler import shutdown_scheduler
+        shutdown_scheduler()
+    except Exception as e:
+        logger.warning(f"Error shutting down scheduler: {e}")
+
+    logger.info("StaffOne API shutdown")
+
+
+# ── App factory ────────────────────────────────────────────────────
 app = FastAPI(
     title="StaffOne API",
     description="StaffOne HR Management System API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
-# Custom OpenAPI schema to add Bearer and Basic Auth support
+# ── Rate limiter ───────────────────────────────────────────────────
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# ── Global exception handlers ─────────────────────────────────────
+app.add_exception_handler(Exception, unhandled_exception_handler)
+
+from fastapi.exceptions import RequestValidationError
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
+
+# ── Middleware ─────────────────────────────────────────────────────
+app.add_middleware(ObservabilityMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ── Static files ───────────────────────────────────────────────────
+os.makedirs("uploads/avatars", exist_ok=True)
+app.mount("/static/avatars", StaticFiles(directory="uploads/avatars"), name="static_avatars")
+
+# ── All route modules ──────────────────────────────────────────────
+_all_routers = [
+    auth, attendance, admin, locations, leaves, notifications,
+    analytics, reports, holidays, payroll, config, audit,
+    scheduler, department, compoff, pulse, onboarding
+]
+
+# Register on root (backward compat — frontend uses /auth/login, /attendance/check-in etc.)
+for module in _all_routers:
+    app.include_router(module.router)
+
+# Register under /api/v1 prefix for versioned API
+v1_router = APIRouter(prefix="/api/v1")
+for module in _all_routers:
+    v1_router.include_router(module.router)
+app.include_router(v1_router)
+
+
+# ── Custom OpenAPI schema ──────────────────────────────────────────
 def custom_openapi():
-    # Force regeneration by clearing cache
     app.openapi_schema = None
-    
+
     openapi_schema = get_openapi(
         title="StaffOne API",
         version="1.0.0",
         description="StaffOne HR Management System API",
         routes=app.routes,
     )
-    
-    # Ensure components exist
+
     if "components" not in openapi_schema:
         openapi_schema["components"] = {}
-    
-    # Add both Bearer and Basic Auth security schemes
+
     openapi_schema["components"]["securitySchemes"] = {
         "BearerAuth": {
             "type": "http",
@@ -57,111 +162,60 @@ def custom_openapi():
             "description": "Enter your username and password"
         }
     }
-    
-    # List of public endpoints that don't require authentication
+
     public_endpoints = ["/", "/health", "/auth/login", "/auth/register"]
-    
-    # Set security for protected endpoints
+
     for path, path_item in openapi_schema.get("paths", {}).items():
-        # Skip public endpoints
         if any(path == public or path.startswith(public + "/") for public in public_endpoints):
             continue
-            
+
         for method, operation in path_item.items():
             if method.lower() in ["get", "post", "put", "delete", "patch"]:
-                # For /auth/me, use Bearer token (preferred)
                 if path == "/auth/me":
                     operation["security"] = [{"BearerAuth": []}]
                 else:
-                    # For other endpoints, allow both Bearer and Basic Auth
                     operation["security"] = [{"BearerAuth": []}, {"BasicAuth": []}]
-    
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
 app.openapi = custom_openapi
 
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# Configure Static Files
-if not os.path.exists("uploads/avatars"):
-    os.makedirs("uploads/avatars", exist_ok=True)
-
-app.mount("/static/avatars", StaticFiles(directory="uploads/avatars"), name="static_avatars")
-
-# Include routers
-app.include_router(auth.router)
-app.include_router(attendance.router)
-app.include_router(admin.router)
-app.include_router(locations.router)
-app.include_router(leaves.router)
-app.include_router(notifications.router)
-app.include_router(analytics.router)
-app.include_router(reports.router)
-app.include_router(holidays.router)
-app.include_router(payroll.router)
-app.include_router(config.router)
-app.include_router(audit.router)
-app.include_router(scheduler.router)
-app.include_router(department.router)
-app.include_router(compoff.router)
-app.include_router(pulse.router)
-app.include_router(onboarding.router)
-
-
+# ── Root & Health endpoints ────────────────────────────────────────
 @app.get("/")
 def root():
     """Root endpoint."""
     return {
         "message": "StaffOne API",
         "version": "2.0.0",
-        "features": ["Timezone support", "Shift management", "Geofencing", "Working hours", "Admin controls", "Leave management", "Background scheduler"],
+        "features": [
+            "Timezone support", "Shift management", "Geofencing",
+            "Working hours", "Admin controls", "Leave management",
+            "Background scheduler"
+        ],
         "docs": "/docs"
     }
 
 
 @app.get("/health")
 def health_check():
-    """Health check endpoint."""
+    """Health check endpoint with full system status."""
     from app.core.scheduler import get_scheduler_status
+    from app.core.job_queue import get_queue_status
+
+    db_status = check_db_connectivity()
     scheduler_status = get_scheduler_status()
+    queue_status = get_queue_status()
+    metrics = get_metrics_snapshot()
+
+    overall = "healthy" if db_status["status"] == "connected" else "degraded"
+
     return {
-        "status": "healthy",
-        "scheduler": scheduler_status
+        "status": overall,
+        "environment": settings.ENVIRONMENT,
+        "database": db_status,
+        "scheduler": scheduler_status,
+        "job_queue": queue_status,
+        "metrics": metrics,
     }
-
-
-@app.on_event("startup")
-def startup_event():
-    """Initialize background scheduler on startup."""
-    import logging
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
-    
-    try:
-        from app.core.scheduler import init_scheduler
-        init_scheduler()
-        logger.info("Background scheduler initialized successfully")
-    except Exception as e:
-        logger.warning(f"Could not initialize scheduler: {e}")
-
-
-@app.on_event("shutdown")
-def shutdown_event():
-    """Shutdown scheduler gracefully."""
-    import logging
-    logger = logging.getLogger(__name__)
-    
-    try:
-        from app.core.scheduler import shutdown_scheduler
-        shutdown_scheduler()
-        logger.info("Background scheduler shutdown complete")
-    except Exception as e:
-        logger.warning(f"Error shutting down scheduler: {e}")

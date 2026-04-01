@@ -15,5 +15,8 @@ asyncpg>=0.29.0  # Required for async PostgreSQL connections
 pytz>=2024.1  # Timezone support for attendance calculations
 reportlab>=4.0.0  # PDF generation for reports
 apscheduler>=3.10.0  # Background job scheduler
+slowapi>=0.1.9  # API rate limiting
 openpyxl>=3.1.0  # Excel generation for reports
+redis>=5.0.0  # Redis client for caching, rate limiting, job queue
+rq>=1.16.0  # Redis Queue for reliable background jobs
 

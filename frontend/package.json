@@ -6,18 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.12.2",
     "axios": "^1.6.2",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.562.0",
-    "next": "14.0.4",
+    "next": "14.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",

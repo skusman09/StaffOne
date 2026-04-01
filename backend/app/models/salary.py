@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, Date, Boolean, DateTime, ForeignKey, Enum as SQLEnum
+from sqlalchemy import Column, Integer, String, Float, Date, Boolean, DateTime, ForeignKey, Enum as SQLEnum, Index, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -55,6 +55,10 @@ class SalaryRecord(Base):
     Generated monthly based on attendance data.
     """
     __tablename__ = "salary_records"
+    __table_args__ = (
+        Index("ix_salary_user_period", "user_id", "year", "month"),
+        UniqueConstraint("user_id", "year", "month", name="uq_salary_user_period"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, Float, ForeignKey, Boolean, Enum as SQLEnum, TypeDecorator
+from sqlalchemy import Column, Integer, DateTime, String, Float, ForeignKey, Boolean, Enum as SQLEnum, TypeDecorator, Index
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -39,6 +39,9 @@ class SafeShiftType(TypeDecorator):
 class CheckInOut(Base):
     """Check-in/Check-out model for attendance tracking."""
     __tablename__ = "checkinouts"
+    __table_args__ = (
+        Index("ix_checkinouts_user_checkin", "user_id", "check_in_time"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)

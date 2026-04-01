@@ -1,37 +1,41 @@
+"""Onboarding routes — employee onboarding workflows and tasks."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
+
 from app.database import get_db
-from app.models.user import User, Role
-from app.models.onboarding import EmployeeOnboarding as EmployeeOnboardingModel, EmployeeTaskProgress as EmployeeTaskProgressModel
-from app.utils.dependencies import get_current_user, require_role
+from app.models.user import User
+from app.models.onboarding import EmployeeOnboarding as EmployeeOnboardingModel
+from app.services.onboarding_service import OnboardingService
+from app.container import get_onboarding_service
+from app.authorization.dependencies import require
+from app.authorization.permissions import Permission
 from app.schemas.onboarding import (
-    OnboardingWorkflow, OnboardingWorkflowCreate, 
-    EmployeeOnboarding, EmployeeOnboardingCreate, 
+    OnboardingWorkflow, OnboardingWorkflowCreate,
+    EmployeeOnboarding, EmployeeOnboardingCreate,
     EmployeeTaskProgress, EmployeeTaskProgressUpdate,
     EmployeeOnboardingSummary
 )
-from app.services import onboarding_service
 
 router = APIRouter(prefix="/onboarding", tags=["onboarding"])
 
 
-# --- Employee Endpoints ---
+# ── Employee Endpoints ──────────────────────────────────────────────
 
 @router.get("/my", response_model=List[EmployeeOnboardingSummary])
 def get_my_onboarding_summaries(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Get summaries of all assigned onboarding workflows for the current user."""
-    return onboarding_service.get_onboarding_summary(db, current_user.id)
+    """Get summaries of all assigned onboarding workflows."""
+    return service.get_onboarding_summary(current_user.id)
 
 
 @router.get("/my/{onboarding_id}", response_model=EmployeeOnboarding)
 def get_my_onboarding_detail(
     onboarding_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ONBOARDING)),
+    db: Session = Depends(get_db)
 ):
     """Get detailed view of a specific assigned onboarding workflow."""
     ob = db.query(EmployeeOnboardingModel).filter(
@@ -47,103 +51,103 @@ def get_my_onboarding_detail(
 def update_task_status(
     progress_id: int,
     update_data: EmployeeTaskProgressUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.VIEW_OWN_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
     """Mark a task as completed or update notes."""
-    return onboarding_service.update_task_progress(db, current_user.id, progress_id, update_data)
+    return service.update_task_progress(current_user.id, progress_id, update_data)
 
 
-# --- Admin Endpoints ---
+# ── Admin Endpoints ─────────────────────────────────────────────────
 
-@router.post("/admin/templates", response_model=OnboardingWorkflow, dependencies=[Depends(require_role(Role.ADMIN))])
+@router.post("/admin/templates", response_model=OnboardingWorkflow)
 def create_template(
     workflow_data: OnboardingWorkflowCreate,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Create a new onboarding workflow template."""
-    return onboarding_service.create_workflow_template(db, workflow_data)
+    """Create a new onboarding workflow template."""
+    return service.create_workflow_template(workflow_data)
 
 
-@router.put("/admin/templates/{template_id}", response_model=OnboardingWorkflow, dependencies=[Depends(require_role(Role.ADMIN))])
+@router.put("/admin/templates/{template_id}", response_model=OnboardingWorkflow)
 def update_template(
     template_id: int,
     workflow_data: OnboardingWorkflowCreate,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Update an onboarding workflow template."""
-    return onboarding_service.update_template(db, template_id, workflow_data)
+    """Update an onboarding workflow template."""
+    return service.update_template(template_id, workflow_data)
 
 
-@router.get("/admin/templates", response_model=List[OnboardingWorkflow], dependencies=[Depends(require_role(Role.ADMIN))])
+@router.get("/admin/templates", response_model=List[OnboardingWorkflow])
 def list_templates(
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: List all onboarding templates."""
-    return onboarding_service.get_all_templates(db)
+    """List all onboarding templates."""
+    return service.get_all_templates()
 
 
-@router.delete("/admin/templates/{template_id}", dependencies=[Depends(require_role(Role.ADMIN))])
+@router.delete("/admin/templates/{template_id}")
 def delete_template(
     template_id: int,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Delete an onboarding template."""
-    onboarding_service.delete_template(db, template_id)
+    """Delete an onboarding template."""
+    service.delete_template(template_id)
     return {"message": "Template deleted successfully"}
 
 
-@router.post("/admin/assign", response_model=EmployeeOnboarding, dependencies=[Depends(require_role(Role.ADMIN))])
+@router.post("/admin/assign", response_model=EmployeeOnboarding)
 def assign_workflow(
     assignment_data: EmployeeOnboardingCreate,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Assign a workflow template to an employee."""
-    return onboarding_service.assign_onboarding(db, assignment_data)
+    """Assign a workflow template to an employee."""
+    return service.assign_onboarding(assignment_data)
 
 
-@router.get("/admin/assignments", dependencies=[Depends(require_role(Role.ADMIN))])
+@router.get("/admin/assignments")
 def get_assignments(
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Get all onboarding assignments with progress."""
-    return onboarding_service.get_all_assignments(db)
+    """Get all onboarding assignments with progress."""
+    return service.get_all_assignments()
 
 
-@router.post("/admin/assignments/{assignment_id}/remind", dependencies=[Depends(require_role(Role.ADMIN))])
+@router.post("/admin/assignments/{assignment_id}/remind")
 def send_reminder(
     assignment_id: int,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Send reminder to employee for onboarding tasks."""
-    onboarding_service.send_reminder(db, assignment_id, admin_user.id)
+    """Send reminder to employee for onboarding tasks."""
+    service.send_reminder(assignment_id, current_user.id)
     return {"message": "Reminder sent successfully"}
 
 
-@router.post("/admin/assignments/{assignment_id}/notes", dependencies=[Depends(require_role(Role.ADMIN))])
+@router.post("/admin/assignments/{assignment_id}/notes")
 def add_note(
     assignment_id: int,
     note_data: dict,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Add note to employee onboarding."""
-    note = onboarding_service.add_note(db, assignment_id, admin_user.id, note_data.get("note", ""))
+    """Add note to employee onboarding."""
+    note = service.add_note(assignment_id, current_user.id, note_data.get("note", ""))
     return {"message": "Note added successfully", "note": note}
 
 
-@router.get("/admin/assignments/{assignment_id}/notes", dependencies=[Depends(require_role(Role.ADMIN))])
+@router.get("/admin/assignments/{assignment_id}/notes")
 def get_notes(
     assignment_id: int,
-    db: Session = Depends(get_db),
-    admin_user: User = Depends(get_current_user)
+    current_user: User = Depends(require(Permission.MANAGE_ONBOARDING)),
+    service: OnboardingService = Depends(get_onboarding_service)
 ):
-    """Admin: Get all notes for an assignment."""
-    return onboarding_service.get_assignment_notes(db, assignment_id)
+    """Get all notes for an assignment."""
+    return service.get_assignment_notes(assignment_id)
