@@ -31,11 +31,3 @@ StaffOne is a comprehensive, multi-tenant SaaS platform designed to streamline c
 *   **Engagement & Communications:** Built-in pulse surveys to gauge employee sentiment and transactional email delivery powered by Brevo.
 
 ---
-
-## 📸 Application Previews
-
-<!-- Create an 'assets' folder in your repository and upload your images there -->
-
-| Employee Dashboard | Payroll Generation | Leave Approvals |
-| :---: | :---: | :---: |
-| <img src="assets/dashboard.png" width="250" alt="Dashboard Preview" /> | <img src="assets/payroll.png" width="250" alt="Payroll Preview" /> | <img src="assets/leaves.png" width="250" alt="Leave Management Preview" /> |
